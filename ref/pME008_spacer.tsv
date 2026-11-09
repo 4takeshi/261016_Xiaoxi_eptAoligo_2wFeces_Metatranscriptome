@@ -1,0 +1,2 @@
+contig	feature	start	end	length	W群_配列	K群_配列	用途
+pME008~pSL5053	CAST_spacer	9421	9452	32	AGTCTTCCTGTCTTGTCAGCTAGGTGAAGACT	GGTACTGATCTTACACGCCTTCCAGCTCGTTT	群の判別。K群ではこの領域のリードがエンプティー側リファレンスにマップされず、カバレッジが落ちる

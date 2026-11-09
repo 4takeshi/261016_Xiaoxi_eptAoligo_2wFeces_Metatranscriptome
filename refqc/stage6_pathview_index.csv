@@ -1,0 +1,40 @@
+"scheme","direction","term","ko","padj","stat_ora","stat_all","nK_ora","nK_all","ink_ora","ink_all"
+"A","up","ko03010_Ribosome","ko03010",0.00893802308706625,"OK","OK",2,54,0.622,0.726
+"A","down","ko00195_Photosynthesis","ko00195",2.6259758224674e-07,"OK","OK",8,8,0.817,0.817
+"A","down","ko00030_Pentose phosphate pathway","ko00030",4.10202164229536e-06,"OK","OK",15,26,0.722,0.786
+"A","down","ko00480_Glutathione metabolism","ko00480",0.000736821473082734,"OK","OK",5,5,0.695,0.695
+"A","down","ko04016_MAPK signaling pathway - plant","ko04016",0.000736821473082734,"OK","OK",3,3,0.679,0.679
+"A","down","ko04068_FoxO signaling pathway","ko04068",0.000736821473082734,"OK","OK",2,2,0.594,0.594
+"A","down","ko00020_Citrate cycle (TCA cycle)","ko00020",0.0009550352432617,"OK","OK",12,26,0.862,0.93
+"A","down","ko00450_Selenocompound metabolism","ko00450",0.00243387280997803,"OK","OK",3,9,0.831,0.875
+"A","down","ko00121_Secondary bile acid biosynthesis","ko00121",0.00243387280997803,"ERROR","ERROR",3,3,NA,NA
+"A","down","ko04013_MAPK signaling pathway - fly","ko04013",0.00243387280997803,"OK","OK",1,1,0.583,0.583
+"A","down","ko00660_C5-Branched dibasic acid metabolism","ko00660",0.00357919871531223,"OK","OK",5,9,0.875,0.899
+"A","down","ko00190_Oxidative phosphorylation","ko00190",0.00477890974659294,"OK","OK",15,37,0.675,0.717
+"A","down","ko00640_Propanoate metabolism","ko00640",0.00824072973779343,"OK","OK",8,32,0.671,0.742
+"A","down","ko01051_Biosynthesis of ansamycins","ko01051",0.00824072973779343,"OK","OK",1,1,0.715,0.715
+"A","down","ko00710_Carbon fixation by Calvin cycle","ko00710",0.0196469612485541,"OK","OK",7,16,0.835,0.937
+"A","down","ko00720_Other carbon fixation pathways","ko00720",0.0197556044676648,"OK","OK",12,35,0.721,0.818
+"A","down","ko00310_Lysine degradation","ko00310",0.0304352763275612,"OK","OK",4,22,0.702,0.746
+"A","down","ko00120_Primary bile acid biosynthesis","ko00120",0.0304352763275612,"OK","OK",1,1,0.758,0.758
+"A","down","ko04146_Peroxisome","ko04146",0.0345813076851687,"OK","OK",4,8,0.679,0.691
+"B","up","ko00970_Aminoacyl-tRNA biosynthesis","ko00970",0.0484515729771681,"OK","OK",1,23,0.709,0.852
+"B","up","ko03008_Ribosome biogenesis in eukaryotes","ko03008",0.0484515729771681,"OK","OK",1,1,0.868,0.868
+"B","down","ko00195_Photosynthesis","ko00195",7.82339093119543e-09,"OK","OK",8,8,0.817,0.817
+"B","down","ko00030_Pentose phosphate pathway","ko00030",2.21767764573022e-07,"OK","OK",15,26,0.722,0.786
+"B","down","ko00480_Glutathione metabolism","ko00480",7.4714855095081e-05,"OK","OK",5,5,0.695,0.695
+"B","down","ko00190_Oxidative phosphorylation","ko00190",0.00047365020613845,"OK","OK",16,37,0.677,0.717
+"B","down","ko04016_MAPK signaling pathway - plant","ko04016",0.000542277778558831,"OK","OK",3,3,0.679,0.679
+"B","down","ko04068_FoxO signaling pathway","ko04068",0.000542277778558831,"OK","OK",2,2,0.594,0.594
+"B","down","ko00020_Citrate cycle (TCA cycle)","ko00020",0.000621671154051467,"OK","OK",11,26,0.872,0.93
+"B","down","ko00640_Propanoate metabolism","ko00640",0.00107121301135853,"OK","OK",10,32,0.684,0.742
+"B","down","ko00710_Carbon fixation by Calvin cycle","ko00710",0.0018242902133496,"OK","OK",7,16,0.845,0.937
+"B","down","ko00121_Secondary bile acid biosynthesis","ko00121",0.0018242902133496,"ERROR","ERROR",3,3,NA,NA
+"B","down","ko04013_MAPK signaling pathway - fly","ko04013",0.0018242902133496,"OK","OK",1,1,0.583,0.583
+"B","down","ko00660_C5-Branched dibasic acid metabolism","ko00660",0.00256634112399821,"OK","OK",5,9,0.875,0.899
+"B","down","ko00720_Other carbon fixation pathways","ko00720",0.00662915989517545,"OK","OK",11,35,0.728,0.818
+"B","down","ko00450_Selenocompound metabolism","ko00450",0.00662915989517545,"OK","OK",3,9,0.831,0.875
+"B","down","ko01051_Biosynthesis of ansamycins","ko01051",0.00662915989517545,"OK","OK",1,1,0.715,0.715
+"B","down","ko00620_Pyruvate metabolism","ko00620",0.0113761086502077,"OK","OK",13,39,0.686,0.778
+"B","down","ko00120_Primary bile acid biosynthesis","ko00120",0.0272553274020026,"OK","OK",1,1,0.758,0.758
+"B","down","ko04146_Peroxisome","ko04146",0.0299425979785891,"OK","OK",4,8,0.679,0.691

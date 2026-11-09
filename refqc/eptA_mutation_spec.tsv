@@ -1,0 +1,6 @@
+strain	contig	genome_frag_start	strand	frag_len	mut_frag_len	cds_frag_start	cds_frag_end	cds_len	mut_type	mut_frag_start	mut_frag_end	del_bp	ins_bp	microhomology_bp	insert_pos_in_cds	cds_pos_of_mutation	cds_deleted_bp	cds_retained_bp	predicted_log2FC_genotype_only	genome_mut_start	genome_mut_end	contig_mapped	frag_strand_on_genome	q_start	cds_genome_start	cds_genome_end	mut_genome_start	mut_genome_end
+Bth_VPI			+	2301	1797	1	1506	1506	deletion	873	1376	504	0	1		873..1376	504	1002	-0.59			NC_004663.1	+	2	2275190	2276695	2276062	2276565
+Bth_St8	BQNN01000001.1	2841992	+	3100	1410	1184	2887	1704	deletion	1199	2888	1690	0	1		16..1705	1689	15	-6.83	2843190	2844879	BQNN01000001.1	+	10	2843175	2844878	2843190	2844879
+Bun_8492			+	3929	3354	1571	3271	1701	deletion	1770	2344	575	0	0		200..774	575	1126	-0.60			NZ_CP102263.1	+	1	3642227	3643927	3642426	3643000
+Odo_St23	BQOE01000001.1	5080080	-	1761	3206	1	1761	1761	insertion	1425	1424	0	1445	2	337	CDS 337 位の直後	0	1761	0 〜 -2.39	5081504	5081503	BQOE01000001.1	+	17	5080080	5081840	5081504	5081504
+Odo_St24	BQOG01000001.1	330286	+	1761	3206	1	1761	1761	insertion	348	347	0	1445	0	347	CDS 347 位の直後	0	1761	0 〜 -2.34	330633	330632	BQOG01000001.1	+	16	330286	332046	330633	330633

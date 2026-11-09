@@ -1,0 +1,34 @@
+# 「再実行で作り直せる副産物」と「GitHub の上限（1ファイル 100 MB）に触れるもの」を外す。
+# scratch 側（/mnt/scratch/tanoue/261016_.../）には全部そろっている（CLAUDE.md §6-10）。
+
+# ── 95 MB。画像 227 枚で埋まっており、更新のたびにリポジトリへ 95 MB 積まれる。
+#    コード+markdown の写しは pre-commit フックが qmd/6_pathway.qmd に作る。
+#    出力（図・表）は HTML と scratch/pathway/ に残る
+/6_pathway.ipynb
+
+# ── HTML の原寸版（115〜120 MB）。GitHub の上限を超える。縮小版だけ管理する
+/oligo_eptA_analysis_full.html
+
+# ── build_html.py の中間ファイルと quarto のキャッシュ
+/_build/
+/.quarto/
+
+# ── 図の出力。セル3-4 / 3-5 を実行すれば作り直せる。scratch にもある
+/annmap/
+/annmap_pdf/
+
+# ── チャットで図を確認するための控え。解析の成果物ではない
+/chat_preview_images/
+/preview_*.html
+/preview_*.png
+
+# ── KEGG 階層ファイル（4.3 MB × 3）。KEGG から取り直せる。GTF は管理する
+/ref/ko00001_*.keg
+
+# ── Jupyter / OS / エディタの一時ファイル
+.ipynb_checkpoints/
+.Rproj.user/
+.Rhistory
+.DS_Store
+*~
+Rplots.pdf

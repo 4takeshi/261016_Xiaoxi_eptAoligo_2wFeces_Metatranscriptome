@@ -1,0 +1,5 @@
+Name	Completeness	Contamination	Completeness_Model_Used	Translation_Table_Used	Coding_Density	Contig_N50	Average_Gene_Length	Genome_Size	GC_Content	Total_Coding_Sequences	Total_Contigs	Max_Contig_Length	Additional_Notes
+Bth_St8	99.95	0.44	Neural Network (Specific Model)	11	0.899	6133357	379.1011372867587	6222927	0.43	4924	5	6133357	None
+Bth_VPI	99.98	0.73	Neural Network (Specific Model)	11	0.898	6260361	381.35497572815535	6293399	0.43	4944	2	6260361	None
+Bun_8492	99.96	0.4	Neural Network (Specific Model)	11	0.907	4629452	370.00870942201107	4629452	0.47	3789	1	4629452	None
+Odo_St23	99.99	4.27	Neural Network (Specific Model)	11	0.905	5647541	369.5131971051511	5746769	0.44	4698	4	5647541	None

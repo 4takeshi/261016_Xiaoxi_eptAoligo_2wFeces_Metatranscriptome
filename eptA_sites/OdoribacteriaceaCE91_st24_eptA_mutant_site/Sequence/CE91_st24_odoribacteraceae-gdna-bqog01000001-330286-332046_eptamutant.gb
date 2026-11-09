@@ -1,0 +1,164 @@
+LOCUS       CE91_st24_Odoribacterac 3206 bp ds-DNA     linear       19-OCT-2026
+DEFINITION  Odoribacteraceae bacterium CE91-St24 DNA, sequence01, whole genome
+            shotgun sequence.
+ACCESSION   BQOG01000001 BQOG01000000
+VERSION     BQOG01000001.1
+SOURCE      Odoribacteraceae bacterium
+  ORGANISM  Odoribacteraceae bacterium Bacteria; Pseudomonadati; Bacteroidota;
+            Bacteroidia; Bacteroidales; Odoribacteraceae.
+COMMENT     Imported using the Genbank importer.
+            File name: GCA_022835415.1_ASM2283541v1_genomic.gbff
+            Annotated by DFAST https://dfast.ddbj.nig.ac.jp/
+            ##Genome-Assembly-Data-START## Assembly Method       :: Unicycler
+            v. 0.4.8 Genome Coverage       :: 391x Sequencing Technology ::
+            Illumina MiSeq; PacBio Sequel ##Genome-Assembly-Data-END##
+FEATURES             Location/Qualifiers
+     source          1..3206
+                     /label="source"
+                     /ApEinfo_revcolor="#ffef86"
+                     /ApEinfo_fwdcolor="#ffef86"
+                     /organism="Odoribacteraceae bacterium"
+                     /mol_type="genomic DNA"
+                     /submitter_seqid="sequence01"
+                     /strain="CE91-St24"
+                     /db_xref="taxon:2872177"
+                     /geo_loc_name="Japan"
+                     /collection_date="2018-11-01"
+     gene            1..3206
+                     /label="CE91St24_02560"
+                     /ApEinfo_revcolor="#faac61"
+                     /ApEinfo_fwdcolor="#faac61"
+     CDS             1..3206
+                     /label="CE91St24_02560"
+                     /ApEinfo_revcolor="#84b0dc"
+                     /ApEinfo_fwdcolor="#84b0dc"
+                     /inference="COORDINATES: ab initioprediction:MetaGeneAnnotator"
+                     /inference="similar to AA sequence:RefSeq:WP_005798980.1"
+                     /product="membrane protein"
+                     /protein_id="GKI00981.1"
+                     /transl_table=11
+                     /translation="MDSAKASAHSTSVLTKLSKGIVNFVKQPRLLFWLFIVLNLVPNFCLLFTEPLSGLGKTILILLPLGVYMVVFSLFKRAGLMQLILIPVLILHAFQLVLFYLFGESVIAVDMFLNLPVDATIK*YLIIIYNQQLNHKTTIY*YLTKQP*VDIFVNRVFQQNYCSKDSRRAPITALKKLYIH*LLKSKARISHFYFILCRVRLCFCCVNKHSLFIVINSTLYRSKFPVCKIF*QNQSVH*SNVYALPCKRWH*VSCVAN*SYG*RTITLPRLFV*RKYFYC*TNEKSC*TN*LLVFIAPI*KPVCQELGNAFCGLKI*SFSIIPFFRLFENDTVS*HSVVKWIRN**IPLMCGH*SIVVAQLIKFRAVRFWFRNVALNNKSTCFFDFII*NKISYFRHSTIGNNNKVGQCSWLIFKM*QPFSVFLFKPNRFSIPNNCVIFQAAKQHFSQRVSIYFGVVKLIFECRVSCCYNVTLLISKVYAHR*RQIIVGLQQSYFFHCFLS*IFVKVKRSAPNSCFWVFISFVNGNVNTVLL*QVCHVYIIYICLTRISLFADKGT*LKFPTQINR*KNNSLSNFLCNLVGVIIINLWV*LSFYGCINTPRTPPRPGNCWEIYGPPLSLSASFISLLSCWPLLPYTIK*NVLPCSAST*SRGESSSLSLVPDWSLSRNTGITPTR*KQIYTRQT*CITCITRE*NGTAA*TIPSPRKISSIMPPVIPFTNAGKYTCW*SGRPEGLKTGNCGGTSGKPTRY*KTRIIWYYTKMP*HNLTRHTKAYHSFCPPPTLATTSTSTRIKAS*LPSKRPGLKQYSCQTRHRTDHSRITLPRRQTFMSMYVLKPTGD*SRSINSTEKCSR*YSNTWIH*ARTYSLSSTPTGRTSTTKSVTRKNLPNFNRPTPRKSSTKTRTSSSTLTTTASCTRITSCTA*SGY*RTRELMPP*FTRRTTGRIYWTTAGKDSCTPHRSRPITRYTFHS*CGSRKITLMPDQKNTRLHVTIVAPPFLRTPQSSIPC*IWPRFRPLILTPLTRSSIPVLSGDHACTSETTTNP*TITRSG*RNKIKR*FSKGEWTIQLS"
+     misc_feature    1..53
+                     /label="st23_BamA_PF01103"
+                     /ApEinfo_revcolor="#f58a5e"
+                     /ApEinfo_fwdcolor="#f58a5e"
+     gene            1..56
+                     /label="CE91St24_02550"
+                     /ApEinfo_revcolor="#b4abac"
+                     /ApEinfo_fwdcolor="#b4abac"
+     misc_feature    complement(1..198)
+                     /label="dwn0.7kb_st23eptA_PF08019"
+                     /ApEinfo_revcolor="#b4abac"
+                     /ApEinfo_fwdcolor="#b4abac"
+     misc_feature    complement(1..2145)
+                     /label="last56+up0.7kb_st23BamA_PF1103"
+                     /ApEinfo_revcolor="#faac61"
+                     /ApEinfo_fwdcolor="#faac61"
+     misc_feature    complement(1..2445)
+                     /label="last56+up1kb_st23BamA_PF1103"
+                     /ApEinfo_revcolor="#00ffff"
+                     /ApEinfo_fwdcolor="#00ffff"
+     CDS             3..56
+                     /label="CE91St24_02550"
+                     /ApEinfo_revcolor="#84b0dc"
+                     /ApEinfo_fwdcolor="#84b0dc"
+                     /inference="COORDINATES: ab initioprediction:MetaGeneAnnotator"
+                     /inference="similar to AA sequence:RefSeq:WP_005789721.1"
+                     /product="membrane protein"
+                     /protein_id="GKI00980.1"
+                     /transl_table=11
+                     /translation="GFGKGVSAFYFGINEAF*"
+     misc_feature    199..2066
+                     /label="pfam&#10;PF08019&#10;Phosphoethanolaminetransferase EptA"
+                     /ApEinfo_revcolor="#941651"
+                     /ApEinfo_fwdcolor="#941651"
+     misc_feature    261..292
+                     /label="Spacer_odori_eptA1"
+                     /ApEinfo_revcolor="#ff9ccd"
+                     /ApEinfo_fwdcolor="#ff9ccd"
+     misc_feature    348..492
+                     /label="150bp Left Flank"
+                     /ApEinfo_revcolor="#84b0dc"
+                     /ApEinfo_fwdcolor="#84b0dc"
+     misc_feature    complement(529..1608)
+                     /label="tetX1"
+                     /ApEinfo_revcolor="#84b0dc"
+                     /ApEinfo_fwdcolor="#84b0dc"
+     promoter        complement(1652..1730)
+                     /label="PcfxA"
+                     /ApEinfo_revcolor="#c7b0e3"
+                     /ApEinfo_fwdcolor="#c7b0e3"
+     misc_feature    complement(1736..1792)
+                     /label="57bp Right Transposon End (Truncated)"
+                     /ApEinfo_revcolor="#ffef86"
+                     /ApEinfo_fwdcolor="#ffef86"
+     misc_feature    complement(2067..2766)
+                     /label="up0.7kb_st23eptA_PF08019"
+                     /ApEinfo_revcolor="#85dae9"
+                     /ApEinfo_fwdcolor="#85dae9"
+     primer          complement(2069..2088)
+                     /label="-22bp_st23eptAPF08019_Fwd"
+                     /note="sequence: ggttccatttcactcccgcg"
+                     /ApEinfo_revcolor="#b7e6d7"
+                     /ApEinfo_fwdcolor="#b7e6d7"
+     primer          complement(2090..2109)
+                     /label="-43bp_st23eptAPF08019_Fwd"
+                     /note="sequence: tgacgggatagttcatgctg"
+                     /ApEinfo_revcolor="#d59687"
+                     /ApEinfo_fwdcolor="#d59687"
+ORIGIN
+        1 atggattcgg caaaggcgtc agcgcattct acttcggtat taacgaagct ttctaaaggg
+       61 atcgtgaatt tcgtgaaaca gccaagatta ctgttttggc tctttatcgt gttgaattta
+      121 gtcccgaatt tctgcttgct tttcacggaa cctctctccg gactgggcaa aacgatcttg
+      181 atcctactac cacttggtgt ttacatggtc gtgttctccc tgttcaaacg ggcgggcctc
+      241 atgcaattga tactgattcc ggtactgatc ttacacgcct tccagctcgt tttgttctat
+      301 ctcttcggag agtcggtcat cgctgttgat atgttcctga acctaccTGT TGATGCAACC
+      361 ATAAAGTGAT ATTTAATAAT TATTTATAAT CAGCAACTTA ACCACAAAAC AACCATATAT
+      421 TGATATCTCA CAAAACAACC ATAAGTTGAT ATTTTTGTGA ATCGAGTATT TCAGCAAAAC
+      481 TACTGCAGTA AGGACTCTAG AAGGGCACCA ATAACTGCCT TAAAAAAATT ATACATTCAT
+      541 TAGCTGTTGA AAAGTAAAGC TCGGATTTCG CATTTCTATT TCATTCTTTG TCGAGTCCGC
+      601 TTGTGCTTCT GTTGCGTAAA CAAACATTCG TTGTTCATAG TCATCAATAG CACTTTGTAT
+      661 CGTTCCAAAT TTCCCGTTTG TAAGATTTTC TGACAAAATC AAAGCGTCCA TTAGTCCAAT
+      721 GTTTACGCCC TGCCCTGCAA AAGGTGGCAT TAGGTGAGCT GTGTCGCCAA TTAAAGTTAT
+      781 GGGTAACGGA CGATTACTCT TCCAAGGCTT TTTGTCTAGC GGAAATATTT TTATTGTTAA
+      841 ACCAACGAAA AAAGTTGTTG AACGAATTAA CTCCTTGTAT TCATTGCTCC AATTTGAAAA
+      901 CCTGTTTGTC AAGAACTCGG AAACGCTTTT TGTGGGCTTA AAATCTAATC CTTTTCCATT
+      961 ATTCCATTCT TCAGGCTTTT TGAAAATGAC ACCGTAAGTT AACATTCCGT TGTTAAATGG
+     1021 ATTCGCAACT AATAAATTCC CTTGATGTGC GGTCATTAGT CTATTGTTGT TGCACAACTT
+     1081 ATAAAATTCA GGGCAGTTCG TTTCTGGTTC AGGAATGTCG CCCTGAATAA TAAAAGTACC
+     1141 TGTTTCTTCG ACTTCATTAT CTGAAACAAA ATTTCTTATT TTAGACATTC CACCATTGGA
+     1201 AACAATAATA AAGTCGGCCA ATGCAGTTGG CTTATTTTCA AAATGTAGCA GCCATTTTCC
+     1261 GTTTTCTTGT TCAAGCCCAA TAGATTTTCT ATCCCAAACA ACTGTGTCAT TTTTCAAGCT
+     1321 GCCAAGCAAC ATTTTTCGCA ACGCGTTTCT ATTTATTTCG GGGTTGTCAA ACTTATTTTC
+     1381 GAGTGTCGGG TTTCTTGTTG CTATAATGTT ACCCTTCTCA TCAGCAAAGT TTACGCCCAT
+     1441 AGGTAGCGCC AAATCATAGT AGGTTTGCAA CAATCCTACT TTTTTCATTG CTTCTTGTCC
+     1501 TGAATTTTTG TGAAGGTCAA GCGTTCCGCC CCAAACTCGT GCTTTTGGGT TTTCATCTCT
+     1561 TTCGTAAACG GTAATGTCAA TACCGTTTTG TTGTAACAAG TTTGCCATGT TTATATTATT
+     1621 TATATTTGTT TGACGAGAAT ATCTTTATTT GCCGACAAAG GTACATAACT AAAGTTTCCC
+     1681 ACCCAAATAA ATAGATAGAA AAATAACAGT TTGTCGAATT TTCTTTGTAA CCTAGTGGGT
+     1741 GTGATAATTA TCAATTTATG GGTGTAATTA TCATTTTATG GTTGTATCAA CAcaccacga
+     1801 acgcctccga ggccggggaa ttgctgggaa atatatggcc ctccattatc attgtctgcg
+     1861 tcctttatat ccctgttatc gtgctggcct ctattgccgt acaccataaa gtgaaacgta
+     1921 ctgccgtgtt ccgcaagcac atgatcacgt ggggaatcat cttctttatc attggttccg
+     1981 gactggtcgc tttcgagaaa cacagggata acacctacga ggtaaaaaca gatatatacc
+     2041 cggcaaacgt gatgtataac ttgtattacg cgggagtgaa atggaaccgc agcatgaact
+     2101 atcccgtcac ctcgaaagat ttcgtctatc atgccacccg tgattccgtt caccaacgcc
+     2161 gggaaatata cgtgctggta atcggggagg ccggaagggc tgaaaactgg gaactgtggg
+     2221 ggtaccagcg ggaaaccaac ccgttattga aaaacgagga taatctggta ctatacaaag
+     2281 atgccttaac acaatctaac acgacacaca aaagcgtacc actcattctg tccgccgccg
+     2341 acgcttgcca ctacgagtac ctctacacgc ataaaagcat cgtaactgcc ttcaaagagg
+     2401 ccgggtttaa aacaatattc ctgtcaaacc agacaccgaa ccgatcattc acggattact
+     2461 ttgccgcgga ggcagacatt catgtcaatg tacgtcctca agccgacggg ggattaatca
+     2521 cggtcaataa attcgacgga gaaatgctcc cgttgataca gcaatacgtg gattcattga
+     2581 gcgagaacct attcattgtc ttccacacct acgggtcgca cttcaactac aaagagcgtt
+     2641 acccggaaga atttgccaaa tttcaaccgg ccaacgccac ggaagtcgag tacaaaaaca
+     2701 aggaccagct catcaacgct tacgacaaca gcgtcctgta cacggattac ttcctgcaca
+     2761 gcctgatcgg gatattgaag aactcgggag ctgatgccac catgatttac tcgccggacc
+     2821 acggggagga tttactggac gacagccgga aaagattcct gcacgcctca ccgatcccga
+     2881 cctattacca gatacacatt ccattcctga tgtggttctc ggaaaattac attgatgcca
+     2941 gaccagaaaa atacgaggtt gcacgttaca atagtagcgc ccccatttct tcgaacgcct
+     3001 caatcttcca taccctgttg aatatggccg agattcagac cccttatttt gactccactt
+     3061 actcgctcgt caatcccggt tttgtccgga gaccacgcat gtacctcgga gaccacgacc
+     3121 aacccgtgaa ctattacgag gtcgggttga agaaacaaga taaagagatg attctcaaaa
+     3181 ggggaatgga ctattcaatt gagtga
+//

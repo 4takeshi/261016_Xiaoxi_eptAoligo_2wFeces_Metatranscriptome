@@ -1,0 +1,3146 @@
+---
+title: 'ステージ2: リファレンス構築'
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.19.5
+  kernelspec:
+    display_name: R
+    language: R
+    name: ir
+---
+
+
+eptA oligo metatranscriptome（`261016_Xiaoxi_eptAoligo_2wFeces_Metatranscriptome`）
+
+ゲート1を通過したので、マッピング用のリファレンスを作る。**このnotebookの成果物が
+ステージ3以降のすべての前提になる。**
+
+## 作るもの
+
+```
+ref/oligo_eptA.fna      統合FASTA（4株 + pME008 + mouse decoy）
+ref/oligo_eptA.gtf      統合GTF（株ID・CDSフラグ・KO・eptA3分割・mappability）
+ref/bt2/                bowtie2 index
+ref/salmon/             salmon index
+```
+
+## ゲート1で確定済みの前提
+
+| 項目 | 決定 |
+|---|---|
+| `Odo_St24` | **リファレンスに入れない。** St23 とゲノムがほぼ同一（1kb以上の固有配列 0 bp）。カウントは「*Odoribacter* sp.（CE91-St23/St24）」という1単位 |
+| `Bth_VPI` ↔ `Bth_St8` | **株レベルで区別可能**（固有 199 kb / 206 CDS、両株とも diamond blastp で検証済み）。共通領域がどこまで使えるかは §J の mappability で確定する |
+| `pME008` | **両群に存在する**（W群=エンプティー、K群=eptA標的）。入れないと両群とも unmapped |
+| mouse | **decoy として入れる。** 宿主RNAの誤マップを防ぐ |
+
+## 進め方
+
+A〜C は入力の確認と eptA 座標の確定。D〜F は重い処理（Bakta / eggNOG）。
+G〜I でリファレンスを組み、J で mappability を測る。
+
+**§C で VPI と B.uni のゲノム座標が確定する。** これが GTF の eptA feature に必要。
+
+
+## セル1: 設定
+**ここだけ環境に合わせて書き換える。**
+
+```{r}
+#| vscode: {languageId: r}
+from pathlib import Path
+
+# ── 中間ファイル（容量大）。ステージ1と同じ scratch
+ROOT    = Path("/mnt/scratch/tanoue/261016_Xiaoxi_eptAoligo_2wFeces_Metatranscriptome")
+# ── notebook と小さい表（git管理側）
+PROJECT = Path("/home/tanoue/261016_Xiaoxi_eptAoligo_2wFeces_Metatranscriptome")
+
+# ── 入力 ─────────────────────────────────────────────────────
+#   1_genome_copy.ipynb が /db から md5 検証のうえ展開したもの（444 で読み取り専用）
+GENOME_DIR = Path("/mnt/scratch/tanoue/genome/261016_Xiaoxi_eptAoligo_5strains/fna")
+PROVENANCE = GENOME_DIR.parent / "provenance.tsv"   # accession・コピー元・md5
+
+# eptA 変異部位のファイル群（Mac から転送済み）
+#   BthetaVPI_eptA_WT_site/ などの親ディレクトリ
+EPTA_DIR   = PROJECT / "eptA_sites"
+
+# pME008 の GenBank（EPTA_DIR 配下から拾う。無ければ直接指定）
+PME008_GB  = None
+
+# マウスゲノム（decoy）。/db にある GENCODE vM36。bgzip ではなく gzip だが
+# bowtie2-build / salmon index はどちらも .gz を直接読める
+MOUSE_FNA  = Path("/db/gencode_mouse/GRCm39_M36/GRCm39.primary_assembly.genome.fa.gz")
+
+# ── 解析に使う株（Odo_St24 は入れない。ゲート1の STOP 判定） ──
+STRAINS  = ["Bth_VPI", "Bth_St8", "Bun_8492", "Odo_St23"]
+EXCLUDED = {"Odo_St24": "ゲート1 STOP: Odo_St23 とゲノムがほぼ同一（1kb以上の固有配列 0 bp）"}
+
+READLEN = 150          # 150 bp PE の片側
+STEP    = 10           # 擬似リードを刻む間隔（§J）
+THREADS = 16
+
+# ── conda 環境（notebook から conda activate は効かないので絶対パスで叩く）──
+CONDA   = Path("/home/tanoue/miniforge3")
+METATX  = CONDA/"envs/metatx/bin"          # minimap2, bowtie2, samtools, salmon ...
+CHECKM2 = CONDA/"envs/checkm2/bin"
+EMAPPER = CONDA/"envs/eggnog-mapper/bin"
+
+# ── DB ───────────────────────────────────────────────────────
+#   eggNOG: 導入済み（emapper 2.1.12 / eggNOG DB 5.0.2）
+EGGNOG_DB = Path("/db/eggnog-mapper")
+#   CheckM2: 導入済み
+CHECKM2_DB = Path("/db/checkm2/CheckM2_database/uniref100.KO.1.dmnd")
+#   Bakta: ★本プロジェクトでは使わない。4株すべて既存アノテーション（NCBI/DDBJ）に
+#   CDS + rRNA + tRNA + tmRNA が揃っていることを確認済み（CLAUDE.md §11）。
+#   §E は「既存で足りるか」を検算するだけで、Bakta 分岐は発動しない想定
+BAKTA_DB = None
+
+# ── 出力 ─────────────────────────────────────────────────────
+#   ★ MAP_DIR はステージ1（2_reference_qc.ipynb）の mappability/ とは別にする。
+#     あちらは「細菌4株のみ」、こちらは「pME008 + マウス decoy 込み」で測るため、
+#     同じフォルダに書くとステージ1の結果を上書きしてしまう
+REF_DIR  = ROOT/"ref"; BAKTA_DIR = ROOT/"bakta"; EMAP_DIR = ROOT/"eggnog"
+QC_DIR   = ROOT/"refqc"; MAP_DIR = ROOT/"mappability_full"; LOG_DIR = ROOT/"logs"
+for d in (REF_DIR, BAKTA_DIR, EMAP_DIR, QC_DIR, MAP_DIR, LOG_DIR):
+    d.mkdir(parents=True, exist_ok=True)
+
+print("ROOT      :", ROOT)
+print("STRAINS   :", STRAINS, " 除外:", list(EXCLUDED))
+print("READLEN   :", READLEN, "bp / STEP:", STEP, "/ THREADS:", THREADS)
+print()
+for lab, p in [("GENOME_DIR", GENOME_DIR), ("PROVENANCE", PROVENANCE),
+               ("EPTA_DIR", EPTA_DIR), ("MOUSE_FNA", MOUSE_FNA),
+               ("EGGNOG_DB", EGGNOG_DB), ("CHECKM2_DB", CHECKM2_DB)]:
+    print(f"{lab:<11}: {p}  存在: {p.exists()}")
+```
+
+## セル2: ヘルパー
+ステージ1と同じ。conda 環境の bin を順に探して絶対パスを返す。
+
+```{r}
+#| vscode: {languageId: r}
+import subprocess, shutil, time, textwrap, re, struct, os, gzip, csv
+from collections import defaultdict, Counter
+import pandas as pd
+
+pd.set_option("display.unicode.east_asian_width", True)
+pd.set_option("display.width", 200); pd.set_option("display.max_rows", 300)
+
+def sh(cmd, log=None, quiet=False, timeout=None):
+    t0 = time.time()
+    r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+    if log: Path(log).write_text(r.stderr)
+    if r.returncode != 0:
+        print(f"[失敗 rc={r.returncode}] {cmd[:120]}")
+        print(textwrap.indent(r.stderr[-2000:], "  "))
+        return None
+    if not quiet: print(f"[完了 {time.time()-t0:.1f}s] {cmd.split()[0]}")
+    return r.stdout
+
+TOOL_DIRS = [METATX, CHECKM2, EMAPPER, CONDA/"bin"]
+def tool_path(name):
+    for d in TOOL_DIRS:
+        p = Path(d)/name
+        if p.exists(): return str(p)
+    return shutil.which(name)
+def have(name): return tool_path(name) is not None
+
+def read_fasta(path):
+    op = gzip.open if str(path).endswith(".gz") else open
+    name, seq = None, []
+    with op(path, "rt") as f:
+        for line in f:
+            if line.startswith(">"):
+                if name: yield name, "".join(seq)
+                name, seq = line[1:].strip(), []
+            else: seq.append(line.strip())
+    if name: yield name, "".join(seq)
+
+def write_fasta(path, records, width=60):
+    with open(path, "w") as f:
+        for n, s in records:
+            f.write(f">{n}\n")
+            for i in range(0, len(s), width): f.write(s[i:i+width]+"\n")
+
+def show(df, title=None):
+    if title: print(title)
+    try:
+        from IPython.display import display; display(df)
+    except ImportError:
+        print(df.to_string(index=False))
+
+pd.set_option("display.max_colwidth", 80)
+
+
+# ── 結果を PROJECT にも複製する（2_reference_qc.ipynb と同じ作法）──────
+#   ROOT（scratch）は git 管理外。数値結果は PROJECT にも置いて履歴を残す。
+#   配列・index・BAM のような重いものは複製しない
+SKIP_EXT = {
+    ".fna", ".fa", ".fasta", ".ffn", ".faa", ".fsa", ".frn",
+    ".fq", ".fastq",
+    ".bam", ".bai", ".sam", ".cram", ".crai",
+    ".bt2", ".bt2l", ".ebwt", ".mmi", ".sa", ".amb", ".ann", ".pac", ".bwt",
+    ".bin", ".idx", ".dmnd", ".h5",
+    ".gz", ".bz2", ".zip", ".tar", ".xz",
+}
+
+
+def archive_to_project(src_dir, max_mb=50, dest_name=None, quiet=False):
+    """src_dir 配下のファイルを PROJECT/<dest_name> に複製する。
+    SKIP_EXT の拡張子と max_mb 超のファイルは除外する。"""
+    src_dir = Path(src_dir)
+    if not src_dir.exists():
+        if not quiet:
+            print(f"（{src_dir} がまだありません）")
+        return pd.DataFrame()
+    dest_root = PROJECT / (dest_name or src_dir.name)
+    rows = []
+    for f in sorted(src_dir.rglob("*")):
+        if not f.is_file():
+            continue
+        rel = f.relative_to(src_dir)
+        mb = f.stat().st_size / 1e6
+        if f.suffix.lower() in SKIP_EXT:
+            rows.append({"file": str(rel), "MB": round(mb, 1), "結果": "除外（配列/index）"})
+            continue
+        if mb > max_mb:
+            rows.append({"file": str(rel), "MB": round(mb, 1), "結果": f"除外（>{max_mb}MB）"})
+            continue
+        dest_root.mkdir(parents=True, exist_ok=True)
+        dst = dest_root / rel
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(f, dst)
+        rows.append({"file": str(rel), "MB": round(mb, 3), "結果": "複製"})
+    df = pd.DataFrame(rows)
+    if not quiet:
+        print(f"{src_dir}\n  → {dest_root}")
+        show(df) if len(df) else print("  （ファイルなし）")
+    elif len(df):
+        print(f"  複製: {(df['結果'] == '複製').sum()} ファイル → {dest_root}")
+    return df
+
+
+print("ヘルパー定義完了: sh / tool_path / have / read_fasta / write_fasta / show / archive_to_project")
+```
+
+---
+# A. 入力の確認
+
+ゲノム4本、eptA 変異部位のファイル群、pME008、マウスゲノムが揃っているか。
+
+## セル3: ゲノムと周辺ファイルの確認
+
+```{r}
+#| vscode: {languageId: r}
+genomes = {}
+for ext in ("*.fna", "*.fasta", "*.fa"):
+    for f in sorted(GENOME_DIR.glob(ext)):
+        if f.stem in STRAINS: genomes[f.stem] = f
+
+rows = []
+for sid in STRAINS:
+    f = genomes.get(sid)
+    if f is None:
+        rows.append({"株ID": sid, "状態": "!! ファイルなし"}); continue
+    lens = [len(s) for _, s in read_fasta(f)]
+    rows.append({"株ID": sid, "contig数": len(lens), "全長_Mb": round(sum(lens)/1e6, 3),
+                 "最長_Mb": round(max(lens)/1e6, 3), "状態": "OK"})
+show(pd.DataFrame(rows), "解析に使うゲノム")
+
+print()
+for sid, why in EXCLUDED.items():
+    print(f"除外: {sid}  — {why}")
+
+print()
+print("eptA 変異部位フォルダ:", EPTA_DIR, "存在:", EPTA_DIR.exists())
+if EPTA_DIR.exists():
+    n = sum(1 for _ in EPTA_DIR.rglob("*") if _.is_file())
+    print(f"  ファイル {n} 件")
+else:
+    print("  !! Mac の 'eptA mutant sites' フォルダをサーバへ転送してください")
+
+print()
+print("マウスゲノム:", MOUSE_FNA, "存在:", MOUSE_FNA.exists())
+if not MOUSE_FNA.exists():
+    print("  !! decoy に使うので必要。/db にある既存のものを探す")
+    print("     例: ls -R /db/gencode_mouse/")
+```
+
+## セル4: pME008 の GenBank を探す
+
+両群に存在するので**必ずリファレンスに入れる**。15,808 bp、Type I-F CAST
+（Cas6/7/8 + TniQ + TnsA/B/C）+ tetX1 + PcfxA + E. coli ori。
+
+```{r}
+#| vscode: {languageId: r}
+# ── pME008（= pSL5053）の GenBank を探す ──────────────────────
+#   eptA_sites/<Odo株>_eptA_WT_site/plasmid/pME008.gb にある（St23 / St24 の2か所）。
+#   CLAUDE.md §2 のとおり pME008 は Odoribacter のみが持ち、W群は
+#   エンプティーベクター、K群は eptA 標的スペーサー入り。
+#   スペーサーの有無しか違わないので、リファレンスにはエンプティー側を1本入れる。
+if PME008_GB is None:
+    cand = sorted(EPTA_DIR.rglob("pME008*.gb")) + sorted(EPTA_DIR.rglob("pME008*.gbk"))
+    PME008_GB = cand[0] if cand else None
+    if len(cand) > 1:
+        # 複数見つかった場合、中身が同一かを確認してから先頭を採用する
+        import hashlib
+        h = {hashlib.md5(Path(c_).read_bytes()).hexdigest() for c_ in cand}
+        print(f"候補 {len(cand)} 件:")
+        for c_ in cand:
+            print("   ", c_.relative_to(EPTA_DIR))
+        print("  → 内容は" + ("同一。先頭を採用" if len(h) == 1
+                             else "!! 異なる。どれを使うか要確認"))
+
+print()
+print("pME008 GenBank:", PME008_GB)
+if PME008_GB and Path(PME008_GB).exists():
+    txt = Path(PME008_GB).read_text(errors="replace")
+    m = re.search(r"LOCUS\s+(\S+)\s+(\d+)\s+bp", txt)
+    if m:
+        print(f"  LOCUS   : {m.group(1)}  長さ: {int(m.group(2)):,} bp")
+    print(f"  feature : /label= が {len(re.findall(r'/label=', txt))} 件")
+    labels = sorted(set(re.findall(r'/label="([^"]+)"', txt)))
+    key = [l for l in labels
+           if re.search(r"Cas\d|Tns[ABC]|TniQ|tetX|PcfxA|ermF|bla|flank|Transposon|origin",
+                        l, re.I)]
+    print("  主要feature:")
+    for l in key:
+        print("     ", l)
+else:
+    print("  !! 見つかりません。EPTA_DIR を確認するか PME008_GB を直接指定してください")
+
+# ── 変異体側（スペーサー入り）の配列も確認しておく ───────────────
+#   リファレンスには入れないが、長さの差＝スペーサー長を確認する
+mut = sorted(EPTA_DIR.rglob("pME008_*contig.fasta"))
+if mut:
+    print()
+    print("変異体側のプラスミド（参考。リファレンスには入れない）:")
+    for f in mut[:1]:
+        L = sum(len(s) for _, s in read_fasta(f))
+        print(f"  {f.name}  {L:,} bp")
+    print("  → 長さはほぼ同じ。スペーサーは置換されている（詳細はセル4-2）")
+```
+
+## セル4-2: pME008 のスペーサー領域を特定する（★群の判別子）
+
+**W群（エンプティー）と K群（ターゲティング）の唯一の配列差**を座標として確定する。
+
+```
+empty  : ATAAC AGTCTTCCTGTCTTGTCAGCTAGGTGAAGACT GTGAA
+mutant : ATAAC GGTACTGATCTTACACGCCTTCCAGCTCGTTT GTGAA
+        └5bp┘ └────────── 32 bp ───────────┘└5bp┘
+```
+
+**32 bp が「挿入」ではなく「置換」されている**（田之上先生による確認）。
+プラスミド全長の差 1 bp は環状配列の線状化によるもので、スペーサー長は同じ。
+
+GenBank 上に **`replace_spacer`（9,421–9,452）** という feature が実在し、
+前後を **`V. cholarae repeat`（CRISPR リピート）** に挟まれた
+典型的な **repeat–spacer–repeat** 構造になっている。
+内部の BbsI 2か所がスペーサー挿入用の golden-gate 部位
+（エンプティー側の 32 bp は stuffer で、BbsI 認識配列 `GAAGAC` を含む）。
+
+### ★ CLAUDE.md の更新が必要
+
+CLAUDE.md §2 には
+
+> **両方とも tetX1 と CAST機構一式を保持** → **tetX1 は群の判別に使えない**
+
+とあり、ステージ4の遺伝子型確認では
+「Odo 染色体のCAST挿入ジャンクション」だけが判別子とされていた。
+
+**この 32 bp は W群と K群で確実に異なるので、第2の判別子として使える。**
+リファレンスにエンプティー側を入れておけば、**K群ではこの領域に重なるリードが
+マップされず、カバレッジが落ちる**（150 bp リードなので前後150 bp を含む
+約180 bp の窓で低下する）。
+
+染色体ジャンクションの検出より単純で、カバレッジを見るだけで済む。
+ステージ4のQC表に追加する。
+
+座標は `ref/pME008_spacer.tsv` に保存し、セル19（pME008 の GTF 化）で
+`CAST_spacer` として feature に加える。
+
+```{r}
+#| vscode: {languageId: r}
+import re as _re
+
+# ── pME008 のスペーサー領域を特定する ────────────────────────
+#   ★ W群（エンプティー）と K群（ターゲティング）の唯一の配列差。
+#     32 bp が「挿入」ではなく「置換」されている（田之上先生による確認）。
+#
+#       empty  : ATAAC AGTCTTCCTGTCTTGTCAGCTAGGTGAAGACT GTGAA
+#       mutant : ATAAC GGTACTGATCTTACACGCCTTCCAGCTCGTTT GTGAA
+#               └5bp┘ └────────── 32 bp ───────────┘└5bp┘
+#
+#   エンプティー側の 32 bp には BbsI 認識配列（GAAGAC）が含まれる。
+#   スペーサー挿入用の golden-gate クローニング部位（stuffer）である。
+#
+#   ★ これは群の判別子として使える。
+#     CLAUDE.md §2 では「tetX1 は両群にあるので判別に使えない」としているが、
+#     この 32 bp は W群と K群で確実に異なる。リファレンスにエンプティー側を
+#     入れておけば、K群ではこの領域のリードがマップされず、カバレッジが落ちる。
+SPACER_EMPTY  = "AGTCTTCCTGTCTTGTCAGCTAGGTGAAGACT"   # W群（stuffer, BbsI 部位を含む）
+SPACER_MUTANT = "GGTACTGATCTTACACGCCTTCCAGCTCGTTT"   # K群（eptA 標的スペーサー）
+SPACER_FLANK5, SPACER_FLANK3 = "ATAAC", "GTGAA"
+
+# GenBank の ORIGIN 以降から配列を取り出す
+_txt = Path(PME008_GB).read_text(errors="replace")
+pme008_seq = "".join(
+    _re.findall(r"^\s*\d+\s+([acgtnACGTN ]+)$", _txt.split("ORIGIN")[1], _re.M)
+).replace(" ", "").upper()
+print(f"pME008 配列長: {len(pme008_seq):,} bp")
+
+# スペーサーの位置（1-based, inclusive）
+_i = pme008_seq.find(SPACER_EMPTY)
+if _i < 0:
+    raise SystemExit("!! エンプティー側スペーサーが pME008 配列に見つかりません")
+SPACER_START, SPACER_END = _i + 1, _i + len(SPACER_EMPTY)
+print(f"スペーサー領域 : {SPACER_START:,} – {SPACER_END:,} bp（32 bp, +鎖）")
+print(f"  前後5bp込み  : {SPACER_START-5:,} – {SPACER_END+5:,} bp")
+
+# 近くにある feature（どの文脈にあるかを確認）
+#   primer は数が多すぎる（100件超）ので除外し、構造を示す feature だけ出す
+print()
+print("スペーサー前後 ±200 bp の feature（primer は除外）:")
+_near = []
+for m in _re.finditer(r"^\s{5}(\S+)\s+(complement\()?<?(\d+)\.\.>?(\d+)\)?", _txt, _re.M):
+    kind, s0, e0 = m.group(1), int(m.group(3)), int(m.group(4))
+    if kind == "primer":
+        continue
+    if e0 < SPACER_START - 200 or s0 > SPACER_END + 200:
+        continue
+    seg = _txt[m.end():m.end() + 400]
+    lab = _re.search(r'/label="([^"]+)"', seg)
+    _near.append({"種別": kind, "start": s0, "end": e0,
+                  "鎖": "-" if m.group(2) else "+",
+                  "label": lab.group(1) if lab else ""})
+show(pd.DataFrame(_near).sort_values("start"))
+print()
+print("→ `replace_spacer`（9,421–9,452）が、前後を `V. cholarae repeat`（CRISPRリピート）に")
+print("   挟まれた repeat–spacer–repeat 構造。内部の BbsI 2か所がスペーサー挿入用の")
+print("   golden-gate 部位。先生のご説明（32 bp の置換）と完全に一致する。")
+
+# ── 変異体側プラスミドでの位置（参考）─────────────────────────
+_mut = sorted(EPTA_DIR.rglob("pME008_*contig.fasta"))
+if _mut:
+    mut_seq = "".join(s for _, s in read_fasta(_mut[0])).upper()
+    rc = SPACER_MUTANT[::-1].translate(str.maketrans("ACGT", "TGCA"))
+    j = mut_seq.find(SPACER_MUTANT)
+    strand = "+"
+    if j < 0:
+        j = mut_seq.find(rc); strand = "-"
+    print()
+    print(f"変異体側プラスミド（{_mut[0].name}, {len(mut_seq):,} bp）:")
+    print(f"  K群スペーサー: {j+1:,} – {j+32:,} bp（{strand}鎖）")
+    print(f"  → 長さの差 {len(mut_seq)-len(pme008_seq)} bp は環状配列の線状化によるもので、"
+          f"スペーサーは置換（32 bp ↔ 32 bp）")
+
+# ── ステージ4で使う判別子として記録しておく ──────────────────
+spacer_info = pd.DataFrame([{
+    "contig": "pME008~pSL5053",
+    "feature": "CAST_spacer",
+    "start": SPACER_START, "end": SPACER_END, "length": 32,
+    "W群_配列": SPACER_EMPTY, "K群_配列": SPACER_MUTANT,
+    "用途": "群の判別。K群ではこの領域のリードがエンプティー側リファレンスに"
+            "マップされず、カバレッジが落ちる",
+}])
+show(spacer_info.T.rename(columns={0: "値"}), title="スペーサー領域（ステージ4の判別子）")
+spacer_info.to_csv(REF_DIR / "pME008_spacer.tsv", sep="\t", index=False)
+print()
+print("保存:", REF_DIR / "pME008_spacer.tsv")
+```
+
+---
+# B. eptA 変異座標の解析
+
+**Mac 上で行った解析を、サーバ上で再現できる形にしたもの。**
+WT と変異体の配列を突き合わせて、欠失・挿入の区間を自動で求める。
+
+## 仕組み
+
+WT と変異体は「共通の5'端 + 可変部 + 共通の3'端」という構造をしている。
+5'端と3'端の一致長を数えれば、可変部（= 変異区間）が決まる。
+
+```
+WT  : [-------共通5'端-------][--欠失される配列--][--共通3'端--]
+MUT : [-------共通5'端-------]                   [--共通3'端--]
+```
+
+挿入の場合は逆に、変異体側の可変部が挿入配列になる。
+
+## ファイル形式の注意
+
+変異部位のファイルは3種類が混在している。
+
+| 拡張子 | 実際の中身 | 対象 |
+|---|---|---|
+| `.gb` | GenBank テキスト | Bth_St8, Odo_St23, Odo_St24 |
+| `.dna` | **SnapGene バイナリ** | Bth_VPI / Bun_8492 の **WT** |
+| `.dna` | **GenBank テキスト**（拡張子が紛らわしい） | Bth_VPI / Bun_8492 の **変異体** |
+
+先頭8バイトが `LOCUS` かどうかで判別する。
+
+## セル5: 配列・feature 読み取り関数
+
+```{r}
+#| vscode: {languageId: r}
+def _sg_blocks(path):
+    """SnapGene .dna は [1バイトtype][4バイトBE長][データ] の連結"""
+    d = open(path, "rb").read(); i = 0
+    while i + 5 <= len(d):
+        t = d[i]; n = struct.unpack(">I", d[i+1:i+5])[0]; i += 5
+        yield t, d[i:i+n]; i += n
+
+def _gb_seq(path):
+    s, on = [], False
+    for line in open(path, encoding="utf-8", errors="replace"):
+        if line.startswith("ORIGIN"): on = True; continue
+        if on:
+            if line.startswith("//"): break
+            s.append(re.sub(r"[^acgtnACGTN]", "", line))
+    return "".join(s).upper()
+
+def _sg_seq(path):
+    out = None
+    for t, b in _sg_blocks(path):
+        if t == 0: out = b[1:].decode("ascii", "replace").upper()
+    return out
+
+def load_seq(path):
+    """.gb / SnapGene .dna / GenBankなのに.dna の3種すべてに対応"""
+    return _gb_seq(path) if open(path, "rb").read(8).startswith(b"LOCUS") else _sg_seq(path)
+
+def load_features(path):
+    """(name, type, start, end) のリスト。座標は1-based inclusive"""
+    feats = []
+    if open(path, "rb").read(8).startswith(b"LOCUS"):
+        # GenBank: FEATURES 〜 ORIGIN を読む
+        blk, cur = [], None
+        for line in open(path, encoding="utf-8", errors="replace"):
+            if line.startswith("ORIGIN"): break
+            m = re.match(r"^ {5}(\S+)\s+(\S.*)$", line)
+            if m:
+                if cur: blk.append(cur)
+                cur = {"type": m.group(1), "loc": m.group(2).strip(), "label": None}
+            elif cur and "/label=" in line:
+                lm = re.search(r'/label="?([^"\n]+)"?', line)
+                if lm and cur["label"] is None: cur["label"] = lm.group(1)
+        if cur: blk.append(cur)
+        for b in blk:
+            nums = re.findall(r"(\d+)", b["loc"])
+            if len(nums) >= 2:
+                feats.append((b["label"] or b["type"], b["type"], int(nums[0]), int(nums[-1])))
+    else:
+        xml = None
+        for t, b in _sg_blocks(path):
+            if t == 10: xml = b.decode("utf-8", "replace")
+        if xml:
+            for f in re.split(r"(?=<Feature\b)", xml):
+                if not f.startswith("<Feature"): continue
+                nm = re.search(r'name="([^"]*)"', f); ty = re.search(r'type="([^"]*)"', f)
+                segs = re.findall(r'range="(\d+)-(\d+)"', f)
+                if nm and segs:
+                    feats.append((nm.group(1), ty.group(1) if ty else "-",
+                                  min(int(a) for a,_ in segs), max(int(b) for _,b in segs)))
+    return feats
+
+def common_prefix(a, b):
+    i = 0
+    while i < min(len(a), len(b)) and a[i] == b[i]: i += 1
+    return i
+
+def common_suffix(a, b):
+    i = 0
+    while i < min(len(a), len(b)) and a[-1-i] == b[-1-i]: i += 1
+    return i
+
+print("配列・feature 読み取り関数を定義しました")
+```
+
+## セル6: 各株の WT / 変異体ファイルを特定
+
+フォルダ名の規則（`<株>_eptA_WT_site` / `<株>_eptA_mutant_site` の下の `Sequence/`）から
+自動で拾う。見つからなければ `EPTA_FILES` に手で書く。
+
+```{r}
+#| vscode: {languageId: r}
+# フォルダ名の接頭辞 -> 株ID
+FOLDER2SID = {
+    "BthetaVPI":             "Bth_VPI",
+    "BthetaCE91_st08":       "Bth_St8",
+    "Buniformis":            "Bun_8492",
+    "OdoribacteriaceaCE91_st23": "Odo_St23",
+    "OdoribacteriaceaCE91_st24": "Odo_St24",   # 参考として解析はするがリファレンスには入れない
+}
+
+EPTA_FILES = {}
+for d in sorted(EPTA_DIR.glob("*_eptA_*_site")) if EPTA_DIR.exists() else []:
+    pre = d.name.split("_eptA_")[0]
+    sid = FOLDER2SID.get(pre)
+    if not sid: continue
+    kind = "WT" if d.name.endswith("_WT_site") else "MUT"
+    seqs = [f for f in (d/"Sequence").glob("*") if f.suffix.lower() in (".gb", ".gbk", ".dna")] \
+           if (d/"Sequence").exists() else []
+    if seqs: EPTA_FILES.setdefault(sid, {})[kind] = seqs[0]
+
+print(f"{'株ID':<10}{'WT':<6}{'MUT':<6}")
+for sid in list(FOLDER2SID.values()):
+    e = EPTA_FILES.get(sid, {})
+    print(f"{sid:<10}{'OK' if 'WT' in e else '—':<6}{'OK' if 'MUT' in e else '—':<6}")
+    for k, v in e.items(): print(f"           {k}: {v.name[:70]}")
+```
+
+## セル7: 欠失・挿入区間を求め、eptA CDS 上の位置に換算
+
+WT 配列と変異体配列を突き合わせ、共通の接頭辞・接尾辞を除いた部分を変異区間とする。
+
+eptA の CDS 座標は **feature 名のパターンマッチではなく、座標をハードコードした辞書
+`EPTA_CDS` で持つ**。株ごとに feature 名が違うため（`lptA` /
+`GKH95601.1_Odori_st23_eptA` / Bth_St8 には eptA 名の feature が無い）。
+**実ファイルの feature と照合して確認済み**（2026-10-20。コメント参照）。
+
+### ★ 元の実装にあった2つのバグを修正した
+
+**(1) 接頭辞と接尾辞の二重計上**
+
+`common_prefix` と `common_suffix` を独立に数えると、**同じ塩基を両方で数えてしまう**ことがある。
+実測で Bth_VPI +1、Bth_St8 +1、Odo_St23 +2 の超過があった（変異点の境界に
+microhomology があるため）。その結果 `del_bp` / `ins_bp` の帳尻が合わなくなっていた。
+
+| 株 | 修正前 | 修正後 |
+|---|---|---|
+| Bth_VPI | 欠失 503 bp・挿入 **−1** bp（矛盾） | 欠失 **504** bp・挿入 0 bp |
+| Bth_St8 | 欠失 1,689 bp・挿入 **−1** bp（矛盾） | 欠失 **1,690** bp・挿入 0 bp |
+| Odo_St23 | **欠失 −2 bp**（挿入なのに欠失扱い） | 挿入 **1,445** bp |
+| Odo_St24 | 挿入 1,445 bp | 挿入 1,445 bp（変化なし） |
+
+→ suffix を切り詰めて `pre + suf <= min(len)` にする。
+純粋な欠失なら `ins_bp = 0` かつ `len(WT) − len(MUT) = del_bp` が必ず成立する。
+セル末尾でこの**帳尻を検算**する。
+
+**(2) `mut_type` の真偽値判定**
+
+`mut_type = "deletion" if dele else "insertion"` は `dele` の**真偽値**を見るため、
+`dele = -2` でも `"deletion"` になっていた（Odo_St23 がこれに該当）。
+→ 欠失bpと挿入bpの**大小**で判定する。
+
+### 修正により CLAUDE.md と整合した
+
+CLAUDE.md §2 は St8「1,690 bp 欠失」・St23「1,445 bp 挿入」と書いており、
+**修正後の値はこれと一致する**。修正前の 1,689 / 1,443 は §2 と食い違っていた。
+
+なお `cds_deleted_bp`（1,689）が `del_bp`（1,690）と1違うのは、
+Bth_St8 の欠失区間 1,199..2,888 が CDS 末端（2,887）を 1 bp 超えているため。これは正しい挙動。
+
+```{r}
+#| vscode: {languageId: r}
+import math
+
+# ── 各株の eptA CDS の座標（断片上）────────────────────────────
+#   feature 名が株ごとに違う（lptA / GKH95601.1_Odori_st23_eptA / など）ため、
+#   名前のパターンマッチではなく座標を直接持つ。
+#   ★ 実ファイルの feature と照合して確認済み（2026-10-20）:
+#     Bth_VPI  lptA  misc_feature 1..1506                      (+)
+#     Bth_St8  CDS   1184..2887  /label=GKH20319.1_2054_..._eptA (+)
+#     Bun_8492 lptA  misc_feature 1571..3271                   (+)
+#     Odo_St23 CDS   complement(1..1761) /label=GKH95601.1_...  (-)
+#     Odo_St24 CDS   1..1761                                   (+)
+#   株 -> (CDS start, CDS end, strand, ゲノム上の断片開始, contig)
+#   ゲノム座標がファイル名から分かるものは入れてある。None は §C で minimap2 で求める
+EPTA_CDS = {
+    "Bth_VPI":  (1,    1506, "+", None,    None),
+    "Bth_St8":  (1184, 2887, "+", 2841992, "BQNN01000001.1"),
+    "Bun_8492": (1571, 3271, "+", None,    None),
+    "Odo_St23": (1,    1761, "-", 5080080, "BQOE01000001.1"),
+    "Odo_St24": (1,    1761, "+", 330286,  "BQOG01000001.1"),
+}
+
+
+def diff_interval(w, m):
+    """WT配列 w と変異体配列 m を突き合わせ、(変異区間, 欠失bp, 挿入bp, 重複bp) を返す。
+
+    ★ 元の実装にあった2つのバグを修正している。
+
+    (1) common_prefix と common_suffix を独立に数えると、同じ塩基を
+        両方で数えてしまい pre+suf が min(len) を超えることがある。
+        実測: Bth_VPI +1、Bth_St8 +1、Odo_St23 +2 の超過があった。
+        その結果 del_bp / ins_bp の帳尻が合わなくなる
+        （例: Bth_VPI が「503 bp 欠失・-1 bp 挿入」という矛盾した値になっていた）。
+        → suffix を切り詰めて pre+suf <= min(len) にする。
+          純粋な欠失なら ins_bp = 0、len(w)-len(m) = del_bp が必ず成立する
+
+    (2) `mut_type = "deletion" if dele else "insertion"` は dele の**真偽値**を見るため、
+        dele = -2 のような負の値でも "deletion" になってしまう。
+        → 欠失bpと挿入bpの大小で判定する
+    """
+    pre = common_prefix(w, m)
+    suf = common_suffix(w, m)
+    overlap = pre + suf - min(len(w), len(m))     # 二重計上した分
+    if overlap > 0:
+        suf -= overlap
+    s0, e0 = pre + 1, len(w) - suf                # WT断片上の変異区間（1-based inclusive）
+    return (s0, e0, len(w) - pre - suf, len(m) - pre - suf, max(0, overlap))
+
+
+def analyse_eptA(sid):
+    e = EPTA_FILES.get(sid, {})
+    if "WT" not in e or "MUT" not in e:
+        return None
+    w, m = load_seq(e["WT"]), load_seq(e["MUT"])
+    s0, e0, dele, ins, microhom = diff_interval(w, m)
+    c0, c1, strand, gstart, contig = EPTA_CDS[sid]
+    L = c1 - c0 + 1
+
+    if dele > ins:                                 # 欠失
+        ov  = max(0, min(e0, c1) - max(s0, c0) + 1)
+        ret = L - ov
+        p0 = (s0 - c0 + 1) if strand == "+" else (c1 - e0 + 1)
+        p1 = (e0 - c0 + 1) if strand == "+" else (c1 - s0 + 1)
+        cdspos = f"{p0}..{p1}"
+        pred = f"{math.log2(ret/L):+.2f}" if ret else "≈-inf"
+        ipos, kind = None, "deletion"
+    else:                                          # 挿入（変異区間は長さ0になる）
+        ov, ret = 0, L
+        ipos = (s0 - c0) if strand == "+" else (c1 - s0 + 1)   # CDS内の挿入点
+        cdspos = f"CDS {ipos} 位の直後"
+        pred = f"0 〜 {math.log2(ipos/L):+.2f}"
+        kind = "insertion"
+
+    return dict(strain=sid, contig=contig or "", genome_frag_start=gstart or "", strand=strand,
+                frag_len=len(w), mut_frag_len=len(m),
+                cds_frag_start=c0, cds_frag_end=c1, cds_len=L,
+                mut_type=kind, mut_frag_start=s0, mut_frag_end=e0,
+                del_bp=dele, ins_bp=ins, microhomology_bp=microhom,
+                insert_pos_in_cds=ipos or "", cds_pos_of_mutation=cdspos,
+                cds_deleted_bp=ov, cds_retained_bp=ret,
+                predicted_log2FC_genotype_only=pred,
+                genome_mut_start=(gstart + s0 - 1) if gstart else "",
+                genome_mut_end=(gstart + e0 - 1) if gstart else "")
+
+
+eptA_rows = [r for r in (analyse_eptA(s) for s in FOLDER2SID.values()) if r]
+df_eptA = pd.DataFrame(eptA_rows)
+show(df_eptA[["strain", "strand", "frag_len", "mut_frag_len", "cds_len", "mut_type",
+              "del_bp", "ins_bp", "cds_pos_of_mutation", "cds_retained_bp",
+              "predicted_log2FC_genotype_only"]],
+     "eptA 変異の構造")
+
+# ── 帳尻の検算 ───────────────────────────────────────────────
+#   純粋な欠失なら len(WT) - len(MUT) = del_bp、純粋な挿入なら = -ins_bp
+print()
+print("検算（len(WT) - len(MUT) が del_bp / ins_bp と合うか）:")
+for r in eptA_rows:
+    lhs = r["frag_len"] - r["mut_frag_len"]
+    rhs = r["del_bp"] - r["ins_bp"]
+    print(f"  {r['strain']:<10} {lhs:>+7,} = {r['del_bp']:,} - {r['ins_bp']:,} = {rhs:>+7,}  "
+          f"{'OK' if lhs == rhs else '!! 不一致'}"
+          + (f"   （microhomology {r['microhomology_bp']} bp を補正済み）"
+             if r["microhomology_bp"] else ""))
+
+spec = QC_DIR/"eptA_mutation_spec.tsv"
+df_eptA.to_csv(spec, sep="\t", index=False)
+print()
+print("保存:", spec)
+```
+
+## セル8: WT断片をFASTAに書き出す（§C でゲノムに当てる）
+
+```{r}
+#| vscode: {languageId: r}
+frag_fa = REF_DIR/"eptA_WT_fragments.fna"
+recs = []
+for sid in FOLDER2SID.values():
+    e = EPTA_FILES.get(sid, {})
+    if "WT" in e: recs.append((f"{sid}_WTfragment", load_seq(e["WT"])))
+write_fasta(frag_fa, recs)
+print(f"{len(recs)} 断片 → {frag_fa}")
+for n, s in recs: print(f"  {n:<24}{len(s):>6} bp")
+```
+
+---
+# C. eptA 断片をゲノムにマップして座標を確定
+
+**`Bth_VPI` と `Bun_8492` はファイル名にゲノム座標が無い**ので、断片をゲノムに当てて求める。
+他の3株は検算になる（ファイル名の座標と一致するはず）。
+
+## セル9: minimap2 で断片をゲノムに当てる
+
+```{r}
+#| vscode: {languageId: r}
+if not have("minimap2"):
+    print("!! minimap2 がありません")
+else:
+    # ★ 各断片を「自分の株のゲノムだけ」に当てる（株ごとに minimap2 を回す）。
+    #
+    #   元の実装は全ゲノムを1本に連結して一括でマップし、--secondary=no を付けていた。
+    #   これだと近縁株に最良ヒットが取られたとき、自株のヒットが secondary として
+    #   捨てられてしまう。実測で Odo_St23 / Odo_St24 の断片が互いの相手の
+    #   ゲノムに当たり（ANI 99.99%）、自株のヒットが1本も残らなかった。
+    #
+    #   株ごとに回せばこの問題は起きず、計算も軽い（1株あたり約1秒）。
+    all_genomes = {f.stem: f for ext in ("*.fna", "*.fasta", "*.fa")
+                   for f in sorted(GENOME_DIR.glob(ext))}
+    print("対象ゲノム:", ", ".join(sorted(all_genomes)))
+    print()
+
+    best = {}
+    for sid in FOLDER2SID.values():
+        if sid not in EPTA_FILES or "WT" not in EPTA_FILES[sid]:
+            continue
+        if sid not in all_genomes:
+            print(f"  {sid}: ゲノムが {GENOME_DIR} にありません"); continue
+
+        # その株の断片だけを取り出した一時FASTA
+        one_fa = QC_DIR/f"_tmp_frag_{sid}.fna"
+        write_fasta(one_fa, [(f"{sid}_WTfragment", load_seq(EPTA_FILES[sid]["WT"]))])
+        paf = QC_DIR/f"eptA_frag_{sid}_vs_genome.paf"
+        sh(f"{tool_path('minimap2')} -x asm5 -t {THREADS} {all_genomes[sid]} {one_fa} > {paf}",
+           log=LOG_DIR/f"minimap2_eptA_{sid}.log", quiet=True)
+        one_fa.unlink()
+
+        for line in open(paf):
+            p_ = line.split("\t")
+            qlen, qs, qe, strand, tgt, tstart, tend = (
+                int(p_[1]), int(p_[2]), int(p_[3]), p_[4], p_[5], int(p_[7]), int(p_[8]))
+            nmatch, blen = int(p_[9]), int(p_[10])
+            if sid not in best or nmatch > best[sid]["nmatch"]:
+                best[sid] = dict(strain=sid, q_len=qlen, q_start=qs, q_end=qe, strand=strand,
+                                 target=f"{sid}~{tgt}", t_start=tstart, t_end=tend,
+                                 nmatch=nmatch, blen=blen, ident=round(100*nmatch/blen, 2),
+                                 q_cov=round(100*(qe-qs)/qlen, 1))
+        print(f"  {sid:<10} → {best.get(sid, {}).get('target', '!! ヒットなし')}")
+
+    df_map = pd.DataFrame(best.values())
+    print()
+    show(df_map, "断片 → 自分のゲノムへのマッピング（最良ヒット）")
+    print()
+    print("※ q_cov が 100 に近く ident が 99 以上なら信頼できる。")
+    print("   q_start が 0 でないのは、断片の端が primer 由来でゲノムと一致しないため。")
+    print("   → セル10 ではこの q_start を差し引いて座標に換算する。")
+```
+
+## セル10: ゲノム座標を確定して spec を更新
+
+断片の `t_start` を使って、CDS と変異区間をゲノム座標に変換する。
+
+**注意: PAF の target 座標は 0-based half-open。** 1-based inclusive に直す。
+断片が逆向き（`strand == "-"`）に当たった場合は座標を反転させる。
+
+```{r}
+#| vscode: {languageId: r}
+if "df_map" in dir():
+    upd = []
+    for r in eptA_rows:
+        sid = r["strain"]
+        hit = best.get(sid)
+        if not hit or hit["q_cov"] < 95:
+            upd.append(r); continue
+        tcontig = hit["target"].split("~", 1)[1]
+
+        # ★ 断片座標 → ゲノム座標の換算。
+        #   元の実装は q_start = 0（断片の先頭からアラインしている）を前提にしていたが、
+        #   実際は断片の端が primer 由来などでアラインせず q_start > 0 になる
+        #   （実測: Bth_VPI 2, Bth_St8 10, Bun_8492 1, Odo_St23 17, Odo_St24 16）。
+        #   その分だけ座標が丸ごとずれていた（ファイル名由来の値と 10〜16 bp 食い違った）。
+        #   → q_start を差し引く。PAF は 0-based 半開区間なので +1 して 1-based にする
+        qs = hit["q_start"]
+        if hit["strand"] == "+":
+            def to_g(p, _h=hit, _qs=qs): return _h["t_start"] + (p - 1 - _qs) + 1
+        else:
+            def to_g(p, _h=hit, _qs=qs): return _h["t_end"] - (p - 1 - _qs)
+
+        r2 = dict(r)
+        r2["contig_mapped"]  = tcontig
+        r2["frag_strand_on_genome"] = hit["strand"]
+        r2["q_start"] = qs
+        r2["cds_genome_start"] = to_g(r["cds_frag_start"])
+        r2["cds_genome_end"]   = to_g(r["cds_frag_end"])
+        if r2["cds_genome_start"] > r2["cds_genome_end"]:        # -鎖なら入れ替え
+            r2["cds_genome_start"], r2["cds_genome_end"] = \
+                r2["cds_genome_end"], r2["cds_genome_start"]
+
+        # ★ 変異区間は欠失と挿入で扱いを分ける。
+        #   挿入では mut_frag_end = mut_frag_start - 1（長さ0の区間）になるため、
+        #   欠失と同じように端を入れ替えると座標が 1 bp ずれる（実測で確認）。
+        #   挿入は「どの塩基の直後に入ったか」という1点なので、start = end とする
+        if r["mut_type"] == "deletion":
+            a_, b_ = to_g(r["mut_frag_start"]), to_g(r["mut_frag_end"])
+            r2["mut_genome_start"], r2["mut_genome_end"] = min(a_, b_), max(a_, b_)
+        else:
+            pos = to_g(r["mut_frag_start"])
+            r2["mut_genome_start"] = r2["mut_genome_end"] = pos
+        upd.append(r2)
+
+    df_eptA = pd.DataFrame(upd)
+    cols = ["strain","contig_mapped","frag_strand_on_genome","q_start",
+            "cds_genome_start","cds_genome_end",
+            "mut_type","mut_genome_start","mut_genome_end","predicted_log2FC_genotype_only"]
+    show(df_eptA[[c_ for c_ in cols if c_ in df_eptA.columns]], "ゲノム座標（確定）")
+    df_eptA.to_csv(spec, sep="\t", index=False)
+    print("\n更新:", spec)
+
+    # ── 検算: ファイル名に座標が入っている3株で、マップ結果と一致するか ──
+    print()
+    print("検算（ファイル名由来の座標 vs minimap2 由来の座標）:")
+    ok = True
+    for r in upd:
+        if r.get("genome_mut_start") and r.get("mut_genome_start"):
+            d = abs(int(r["genome_mut_start"]) - int(r["mut_genome_start"]))
+            print(f"  {r['strain']:<10} ファイル名 {int(r['genome_mut_start']):>9,} / "
+                  f"マップ {int(r['mut_genome_start']):>9,}  差 {d:>3}  "
+                  f"{'OK' if d == 0 else '!! 要確認'}")
+            ok &= (d == 0)
+    print()
+    print("  → 差が 0 なら、セル7の断片座標とセル9のマッピングの両方が正しい"
+          if ok else "  !! 差があります。q_start の扱いか EPTA_CDS の座標を確認すること")
+```
+
+---
+# D. ゲノム品質の確認（CheckM2）
+
+完全性と混入を見る。**株間のクロスコンタミがあるとすべてが狂う**ので、
+アノテーションの前に一度見ておく。
+
+## セル11: CheckM2 — ゲノムの完全性と混入
+
+4株のアセンブリ品質を測る。**参照が汚れていると以降の解析がすべて狂う**ので、
+リファレンスを組む前に確認しておく。
+
+### ★ `--database_path` を明示する
+
+CheckM2 の DB は、通常 `CHECKM2DB` 環境変数か `checkm2 database` で設定した内部パスから探す。
+環境構築時に `conda env config vars set -n checkm2 CHECKM2DB=...` を設定してあるが、
+**notebook は `conda activate` せず絶対パスでバイナリを叩くので、この環境変数は渡らない**
+（実測で確認）。そのため `--database_path` で明示する。
+
+### 見方
+
+| 指標 | 目安 |
+|---|---|
+| Completeness | **> 95%** |
+| Contamination | **< 5%**。高い株は株間クロスコンタミを疑う |
+| Total_Coding_Sequences | セル12 の CDS 数と大きく食い違わないか |
+
+CheckM2 は TensorFlow を使うため、起動時に cuDNN / cuBLAS の警告が出るが無害。
+4株で数分かかる。既に結果があればスキップする。
+
+```{r}
+#| vscode: {languageId: r}
+cm_out = QC_DIR/"checkm2"
+if not have("checkm2"):
+    print("!! checkm2 がありません")
+elif (cm_out/"quality_report.tsv").exists():
+    print("既に結果があります:", cm_out/"quality_report.tsv")
+    print("  作り直すなら refqc/checkm2/ を削除してから再実行")
+elif not CHECKM2_DB.exists():
+    print("!! CheckM2 の DB が見つかりません:", CHECKM2_DB)
+else:
+    # 入力は1フォルダにまとめる必要があるので、解析対象4株をコピーする
+    #   （元の fna は 444 なので read_bytes → write_bytes で複製する）
+    tmpdir = QC_DIR/"_cm2_input"; tmpdir.mkdir(exist_ok=True)
+    for sid in STRAINS:
+        dst = tmpdir/f"{sid}.fna"
+        if not dst.exists():
+            dst.write_bytes(Path(genomes[sid]).read_bytes())
+    print(f"入力: {tmpdir}  ({len(STRAINS)} 株)")
+
+    # ★ --database_path を明示する。
+    #   notebook は conda activate しないので CHECKM2DB 環境変数が渡らない（実測で確認）
+    print(f"DB  : {CHECKM2_DB}")
+    print("実行中（TensorFlow の警告が出るが無害。数分かかる）...")
+    # ★ PATH に checkm2 環境の bin を通す。
+    #   CheckM2 は内部で diamond をサブプロセスとして呼ぶが、絶対パスで
+    #   バイナリを叩くと環境の bin が PATH に入らず
+    #   「ERROR: Make sure diamond is on your system path.」で止まる（実測で確認）。
+    #   mamba run -n checkm2 でもよいが、PATH を足す方が軽い
+    sh(f"PATH={CHECKM2}:$PATH {tool_path('checkm2')} predict "
+       f"--threads {THREADS} --force "
+       f"--database_path {CHECKM2_DB} "
+       f"--input {tmpdir} --output-directory {cm_out} -x fna",
+       log=LOG_DIR/"checkm2.log", timeout=7200)
+
+if (cm_out/"quality_report.tsv").exists():
+    q = pd.read_csv(cm_out/"quality_report.tsv", sep="\t")
+    cols = [c_ for c_ in ["Name", "Completeness", "Contamination", "Genome_Size",
+                          "GC_Content", "Total_Coding_Sequences", "Contig_N50",
+                          "Total_Contigs", "Completeness_Model_Used"]
+            if c_ in q.columns]
+    show(q[cols], "CheckM2")
+    print()
+    print("目安: Completeness > 95%、Contamination < 5%")
+    print("      Contamination が高い株は株間クロスコンタミを疑う")
+    print()
+    ng = q[(q.Completeness < 95) | (q.Contamination >= 5)]
+    if len(ng):
+        print("!! 基準を外れた株:", ", ".join(ng.Name))
+    else:
+        print("4株すべて基準を満たしています")
+    q.to_csv(QC_DIR/"checkm2_quality.tsv", sep="\t", index=False)
+    _ = archive_to_project(QC_DIR, quiet=True)
+```
+
+---
+# E. アノテーション — 既存 locus_tag を使う
+
+## 方針
+
+**NCBI/DDBJ が各ゲノムに付けている既存アノテーションを使う。Bakta は欠けている株だけ。**
+
+| 観点 | 既存アノテーション | Bakta de novo |
+|---|---|---|
+| locus_tag | `BT_RS13740` — **文献で引ける** | `Bth_VPI_00135` — どこにも無い |
+| *B. theta* の PUL 文献との照合 | **できる** | 手作業 |
+| rRNA / tRNA / ncRNA | **あり**（PGAP・DFAST とも barrnap + tRNAscan-SE） | あり |
+| DB | **不要** | 2〜70 GB |
+| 株間での gene caller | RefSeq と DDBJ で揃わない | 揃う |
+
+主解析は**株内**比較なので、株間で gene caller が違っても実害がない。
+影響するのは「株あたりの遺伝子数」の記述と ORA の universe の縁だけ。
+一方 locus_tag の安定性は、解釈と論文化の段階でずっと効く。
+
+## ★ rRNA / tRNA は必ず GTF に入れる
+
+細菌 metatranscriptome では **rRNA 除去後でも全リードの 10〜50% が rRNA**。
+GTF に rRNA feature が無いと:
+
+1. 除去効率をサンプルごとに報告できない（QCの中核）
+2. rRNA リードが**隣接CDSに漏れて**偽の発現になる
+3. ライブラリサイズの分母が rRNA 量に引きずられ size factor が歪む
+
+**rRNA/tRNA は「数えるが DE 解析からは外す」**。消すのではなく `biotype` で区別する。
+
+## 必要なファイル（株ごと）
+
+| ファイル | 用途 |
+|---|---|
+| `*_genomic.gff` | CDS・rRNA・tRNA の座標と locus_tag |
+| `*_translated_cds.faa` | eggNOG の入力 |
+
+**★ `_protein.faa` ではなく `_translated_cds.faa` を使うこと。**
+`_protein.faa` はゲノム内で同一配列のタンパク質を**1レコードに統合**するため、
+パラログを取りこぼす。`_translated_cds.faa` は CDS ごとに1レコードで、
+ヘッダに `[locus_tag=...]` が入っている。
+
+## セル12: 既存アノテーションの確認
+
+**アノテーションの場所は `provenance.tsv` の `src_path` から機械的に求める。**
+
+元の実装は `ROOT/annotation/<株ID>/` に置かれている前提で、`ACCESSION` を手で埋める
+必要があったが、本プロジェクトのアノテーションは
+
+| 株 | 場所 |
+|---|---|
+| Bth_VPI / Bth_St8 / Odo_St23 | `/db`（取得済み） |
+| Bun_8492 | `GENOME_DIR/../download/`（`1_genome_copy.ipynb` セル5 で取得） |
+
+にあり、`src_path`（`*_genomic.fna.gz`）の拡張子を差し替えれば
+`*_genomic.gff.gz` / `*_cds_from_genomic.fna.gz` / `*_translated_cds.faa.gz` が揃う。
+`2_reference_qc.ipynb` セル12 と同じ作法。
+
+### 判定の基準
+
+**CDS があり、かつ rRNA が 1件以上あること。**
+rRNA が 0 の GFF は CDS のみの簡易版なので、その株だけ Bakta に回す必要がある
+（CLAUDE.md §7 — rRNA feature が無いと ①除去効率を報告できない ②rRNA リードが
+隣接CDSに漏れる ③size factor が歪む）。
+
+### locus_tag の形式が株ごとに違う
+
+| 株 | locus_tag の例 | 由来 |
+|---|---|---|
+| Bth_VPI | `BT_RS00005` | RefSeq |
+| Bth_St8 | `CE91St8_00010` | DDBJ |
+| Bun_8492 | `NQ510_RS00005` | RefSeq |
+| Odo_St23 | `CE91St23_00010` | DDBJ |
+
+RefSeq は `<prefix>_RS<番号>`、DDBJ は提出者が付けた任意の文字列。
+**`gene_id` にはこの locus_tag をそのまま使う**（文献で引けるため。CLAUDE.md §7）。
+§H の GTF 作成で効くので、ここで形式を確認しておく。
+
+```{r}
+#| vscode: {languageId: r}
+# ── 既存アノテーションの場所を provenance.tsv から辿る ────────
+#   元の実装は ROOT/annotation/<株ID>/ に置かれている前提だったが、
+#   本プロジェクトのアノテーションは
+#     ・Bth_VPI / Bth_St8 / Odo_St23 → /db（取得済み）
+#     ・Bun_8492                     → GENOME_DIR/../download/（1_genome_copy セル5 で取得）
+#   にあり、場所は provenance.tsv の src_path から機械的に求まる。
+#   2_reference_qc.ipynb セル12 と同じ作法に揃える。
+prov = pd.read_csv(PROVENANCE, sep="\t").set_index("strain_id")
+
+ANNO = {}
+for sid in STRAINS:
+    src = Path(prov.loc[sid, "src_path"])
+    stem = src.name.replace("_genomic.fna.gz", "")
+    ANNO[sid] = {
+        "accession": src.parent.name.split("_ASM")[0],
+        "dir": src.parent,
+        "gff": src.parent / f"{stem}_genomic.gff.gz",
+        "cds": src.parent / f"{stem}_cds_from_genomic.fna.gz",   # 擬似リード・GTF用
+        "faa": src.parent / f"{stem}_translated_cds.faa.gz",     # eggNOG 用（§F）
+    }
+
+# ── GFF の feature を数え、locus_tag の形式も確認する ─────────
+rows = []
+for sid in STRAINS:
+    a = ANNO[sid]
+    cnt, tags = Counter(), []
+    if a["gff"].exists():
+        with gzip.open(a["gff"], "rt") as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                p = line.split("\t")
+                if len(p) < 9:
+                    continue
+                cnt[p[2]] += 1
+                if p[2] == "CDS" and len(tags) < 1:
+                    m = re.search(r"locus_tag=([^;\n]+)", p[8])
+                    if m:
+                        tags.append(m.group(1))
+    rows.append({
+        "株ID": sid,
+        "accession": a["accession"],
+        "由来": "RefSeq" if "refseq" in str(a["dir"]) or a["accession"].startswith("GCF") else "DDBJ",
+        "CDS": cnt["CDS"], "rRNA": cnt["rRNA"], "tRNA": cnt["tRNA"], "tmRNA": cnt["tmRNA"],
+        "locus_tag の例": tags[0] if tags else "—",
+        "translated_cds": "OK" if a["faa"].exists() else "—",
+        "cds_from_genomic": "OK" if a["cds"].exists() else "—",
+        # 判定の基準: CDS があり、かつ rRNA が1件以上あること。
+        # rRNA が 0 の GFF は CDS のみの簡易版なので、その株は Bakta に回す必要がある
+        "判定": "既存を使う" if (cnt["CDS"] and cnt["rRNA"]) else "Bakta が必要",
+    })
+
+df_anno = pd.DataFrame(rows)
+show(df_anno, "既存アノテーションの状況")
+
+need_bakta = df_anno.loc[df_anno["判定"] != "既存を使う", "株ID"].tolist()
+print()
+print("判定の基準: CDS があり、かつ rRNA が 1件以上あること")
+print("  rRNA が 0 なら、そのGFFは CDS のみの簡易版。Bakta に回すか barrnap を別途かける")
+print()
+if need_bakta:
+    print("!! Bakta が必要な株:", ", ".join(need_bakta))
+else:
+    print("4株すべて既存アノテーションで足りる。Bakta の DB ダウンロードは不要")
+    print("→ セル13（NCBI datasets での取得）・セル14（Bakta）は実行不要")
+
+# ── locus_tag の形式が株ごとに違う点を明示しておく ─────────────
+print()
+print("★ locus_tag の形式が株ごとに違う（§H の GTF 作成で効く）:")
+for r in rows:
+    print(f"   {r['株ID']:<10} {r['locus_tag の例']}")
+print("   RefSeq は <prefix>_RS<番号>、DDBJ は提出者が付けた任意の文字列。")
+print("   gene_id はこの locus_tag をそのまま使う（文献で引けるため。CLAUDE.md §7）")
+
+df_anno.to_csv(QC_DIR/"annotation_status.tsv", sep="\t", index=False)
+print()
+print("保存:", QC_DIR/"annotation_status.tsv")
+```
+
+## セル13: アノテーションが足りない株を NCBI から取得する（本プロジェクトでは不要）
+
+セル12 で「Bakta が必要」と判定された株があれば、まず **NCBI/DDBJ から
+アノテーション付きで取り直せないか**を試す。de novo で付け直すより、
+既存の locus_tag をそのまま使える方が良いため（CLAUDE.md §7）。
+
+**本プロジェクトでは4株すべて既存アノテーションで足りるので、このセルは
+「不要」と表示するだけ**で何もしない。将来 oligo の構成株が増えたときのために残す。
+
+取得の実例は `1_genome_copy.ipynb` セル5（Bun_8492 を complete genome に差し替えた箇所）。
+`urllib` で FTP から直接落として md5 検証する方式で、`datasets` コマンドは使っていない。
+
+```{r}
+#| vscode: {languageId: r}
+# ── 不足分を NCBI から取得する（セル12 で need_bakta が空なら何もしない）──
+if not need_bakta:
+    print("アノテーションが不足している株はありません。このセルは実行不要です。")
+    print()
+    print("（4株すべて CDS + rRNA + tRNA + tmRNA が揃っていることをセル12で確認済み）")
+else:
+    print("アノテーションが不足している株:", ", ".join(need_bakta))
+    print()
+    print("まず NCBI/DDBJ から取り直せないか試す。de novo でアノテーションし直すより、")
+    print("既存の locus_tag をそのまま使える方が良い（CLAUDE.md §7）。")
+    print()
+    for sid in need_bakta:
+        acc = ANNO[sid]["accession"]
+        print(f"# {sid} ({acc})")
+        print(f"#   FTP: https://ftp.ncbi.nlm.nih.gov/genomes/all/"
+              f"{acc[:3]}/{acc[4:7]}/{acc[7:10]}/{acc[10:13]}/")
+        print(f"#   取得方法は 1_genome_copy.ipynb セル5 と同じ（urllib + md5 検証）")
+        print()
+    print("# DDBJ の WGS（BQNN01 等）は NCBI Nucleotide から")
+    print("#   'Send to > File > GenBank (full)' でも取れる")
+```
+
+## セル14: 既存アノテーションが取れない株だけ Bakta（本プロジェクトでは不要）
+
+セル13 でも取得できなかった株だけ、Bakta で de novo アノテーションする。
+
+**本プロジェクトでは実行しない。** 4株すべて既存アノテーションで足りることを
+セル12 で確認済みで、`BAKTA_DB = None`（セル1）にしてある。
+
+### Bakta を使う場合の注意
+
+| 項目 | 内容 |
+|---|---|
+| DB | **light（約2GB）で十分。** full（約70GB）との違いは UniRef による産物名の精度だけで、CDS予測・rRNA/tRNA同定は同じ。機能アノテーション（KO・COG・CAZy）は eggNOG-mapper が担当する |
+| locus_tag | `--locus-tag <株ID>` を指定する。既定だと6文字のランダム文字列になり、後から株との対応が取れなくなる（過去プロジェクトで実際に起きた） |
+| contig名 | Bakta は contig を `contig_1` 等に改名する。§G で `株ID~contig名` に付け替えるので問題ないが、**改名前の対応表を残すこと** |
+
+base 環境に bakta 1.8.1 があるが DB 未設定。使うなら専用環境に最新版を入れる方がよい。
+
+```{r}
+#| vscode: {languageId: r}
+# ── Bakta で de novo アノテーション（本プロジェクトでは不要）──────
+if not need_bakta:
+    print("全株に既存アノテーションがあります。Bakta は不要です。")
+    print("（CLAUDE.md §7 のとおり、既存の locus_tag を使う方針）")
+elif BAKTA_DB is None:
+    # ★ セル1 で BAKTA_DB = None にしてあるので、ここで落ちないようにする
+    print("!! Bakta が必要な株:", ", ".join(need_bakta))
+    print("   ただし BAKTA_DB が None（セル1）。使うなら以下を先に行うこと:")
+    print()
+    print("   1) 専用環境を作る（base の bakta 1.8.1 は DB 未設定のまま放置する）")
+    print("      mamba create -y -n bakta -c conda-forge -c bioconda bakta")
+    print("   2) DB を light で取得（約2GB。full は約70GB だが本用途には不要）")
+    print("      mamba run -n bakta bakta_db download --output /db/bakta --type light")
+    print("   3) セル1 の BAKTA_DB を /db/bakta/db-light に設定して再実行")
+elif not have("bakta"):
+    print("!! bakta がありません。必要な株:", ", ".join(need_bakta))
+elif not Path(BAKTA_DB).exists():
+    print(f"!! Bakta DB がありません: {BAKTA_DB}")
+    print(f"   {tool_path('bakta_db') or 'bakta_db'} download "
+          f"--output {Path(BAKTA_DB).parent} --type light")
+else:
+    for sid in need_bakta:
+        out = BAKTA_DIR/sid
+        if (out/f"{sid}.gff3").exists():
+            print(f"[スキップ] {sid}"); continue
+        out.mkdir(parents=True, exist_ok=True)
+        # --locus-tag に株IDを指定する（既定の6文字ランダム文字列だと後で対応が取れない）
+        sh(f"{tool_path('bakta')} --db {BAKTA_DB} --output {out} --prefix {sid} "
+           f"--locus-tag {sid} --threads {THREADS} --force {genomes[sid]}",
+           log=LOG_DIR/f"bakta_{sid}.log", timeout=10800)
+```
+
+---
+# F. eggNOG-mapper — 機能アノテーション
+
+KO / COG / CAZy / PFAM を既存の locus_tag に紐づける。
+**ステージ6の機能解析はここの出力に依存する。**
+
+## セル15: eggNOG の入力 faa を揃える
+
+`_translated_cds.faa.gz` のヘッダから locus_tag を取り出し、**ヘッダを locus_tag に
+付け替える**。こうすると eggNOG の `query` 列がそのまま locus_tag になり、
+§H での GTF との結合が単純になる。
+
+### ★ `_protein.faa` ではなく `_translated_cds.faa` を使う
+
+`_protein.faa` は**ゲノム内で配列が同一のタンパク質を1レコードに統合する**ため、
+パラログを取りこぼす（CLAUDE.md §7）。実例として Bth_VPI は 4,801 CDS に対し
+`_protein.faa` が 4,645 レコードしかなく、156 個が統合されている。
+
+`_translated_cds.faa` は CDS ごとに1レコードなので、locus_tag と1対1で対応する。
+
+### 末尾の `*` を落とす
+
+`_translated_cds.faa` の配列末尾には終止コドンを表す `*` が付く。
+diamond はこれを未知のアミノ酸として警告を出すので、除去しておく。
+
+```{r}
+#| vscode: {languageId: r}
+faa_dir = EMAP_DIR/"input"; faa_dir.mkdir(parents=True, exist_ok=True)
+faa_for = {}
+
+for sid in STRAINS:
+    # セル12 で作った ANNO 辞書から translated_cds を取る
+    #   （元の実装は find_annot() を呼んでいたが、セル12 の書き換えで廃止した）
+    faa = ANNO[sid]["faa"]
+    dst = faa_dir/f"{sid}.faa"
+    if faa.exists():
+        recs, seen, dup = [], set(), 0
+        for name, seq in read_fasta(faa):
+            m = re.search(r"\[locus_tag=([^\]]+)\]", name)
+            lt = m.group(1) if m else name.split()[0].split("|")[-1]
+            if lt in seen:
+                dup += 1; continue          # 同一 locus_tag の重複を除く
+            seen.add(lt)
+            recs.append((lt, seq.rstrip("*")))   # 末尾の終止コドン * を落とす
+        write_fasta(dst, recs); faa_for[sid] = dst
+        print(f"{sid:<10} {len(recs):>5} タンパク質"
+              + (f"（重複 {dup} 件を除外）" if dup else "")
+              + f"  ← {faa.name}")
+    else:
+        bfaa = BAKTA_DIR/sid/f"{sid}.faa"
+        if bfaa.exists():
+            dst.write_bytes(bfaa.read_bytes()); faa_for[sid] = dst
+            print(f"{sid:<10} Bakta の .faa を使用")
+        else:
+            print(f"{sid:<10} !! faa がありません: {faa}")
+
+# ── 4株をまとめた faa も作る（§F で1回だけ emapper を回すため）────
+#   ★ locus_tag が4株で完全に一意であることを確認してから結合する。
+#     重複があると emapper の query 列で株が区別できなくなる
+all_tags = {}
+for sid, f in faa_for.items():
+    for name, _ in read_fasta(f):
+        all_tags.setdefault(name.split()[0], []).append(sid)
+dups = {k: v for k, v in all_tags.items() if len(v) > 1}
+print()
+print(f"locus_tag の総数: {len(all_tags):,} / 重複: {len(dups)} 件")
+if dups:
+    print("!! 重複があるため統合できません:", list(dups)[:5])
+else:
+    combined = faa_dir/"all4.faa"
+    with open(combined, "w") as out:
+        for sid in STRAINS:
+            if sid in faa_for:
+                out.write(Path(faa_for[sid]).read_text())
+    print(f"統合 faa: {combined}  ({sum(1 for _ in read_fasta(combined)):,} タンパク質)")
+    # locus_tag → 株 の対応表（§F で結果を株ごとに分けるのに使う）
+    tag2strain = {k: v[0] for k, v in all_tags.items()}
+
+print()
+print("出力:", faa_dir)
+print()
+print("先頭2レコード（ヘッダが locus_tag になっていることを確認）:")
+if faa_for:
+    with open(list(faa_for.values())[0]) as f:
+        for i, line in enumerate(f):
+            if i >= 4: break
+            print("  " + line.rstrip()[:80])
+```
+
+## セル16: eggNOG-mapper を実行（4株まとめて1回）
+
+KO・COG・CAZy・GO などを付与する。これが §H の GTF の属性になり、
+ステージ6のエンリッチメント解析の土台になる。
+
+### ★ 4株を1回でまとめて走らせる
+
+eggNOG の diamond DB は **9.3 GB** あり、**実行時間はクエリ数ではなく DB の走査で律速される**。
+実測で、63 タンパク質だけでも15分で終わらなかった。
+株ごとに4回走らせると DB を4回走査することになる。
+
+**locus_tag は4株で完全に一意**（重複0件。セル15 で確認）なので、
+結合して**1回だけ**走らせ、結果を locus_tag から株ごとに分ける。
+
+### ★ 絶対パス起動で必要になる3つの指定
+
+| 指定 | 理由 |
+|---|---|
+| `PATH={EMAPPER}:$PATH` | emapper は内部で diamond を呼ぶ。PATH が無いと `Diamond was not found.`（実測） |
+| `--temp_dir` | 既定だと書き込み権限の無い `/home` に作ろうとして `PermissionError`（実測） |
+| `--data_dir` | `EGGNOG_DATA_DIR` 環境変数が渡らないため |
+
+### メモリを使って速くする
+
+このサーバは 1 TB RAM で 980 GB 空いているので、
+
+- `--dbmem` — `eggnog.db`（41 GB）をメモリに載せ、アノテーション段を高速化
+- `--block_size 12` — diamond のブロックを大きくする（約 6×12 = 72 GB 使用）
+- `--cpu 48` — 64 コアのうち 48 を使う
+
+既に結果があればスキップする。
+
+```{r}
+#| vscode: {languageId: r}
+ann_all = EMAP_DIR/"all4.emapper.annotations"
+
+if not have("emapper.py"):
+    print("!! emapper.py がありません")
+elif not EGGNOG_DB.exists():
+    print(f"!! eggNOG DB がありません: {EGGNOG_DB}")
+    print(f"   download_eggnog_data.py --data_dir {EGGNOG_DB} -y")
+elif not (faa_dir/"all4.faa").exists():
+    print("!! 統合 faa がありません。セル15 を先に実行してください")
+elif ann_all.exists() and ann_all.stat().st_size > 0:
+    print("既に結果があります:", ann_all)
+    print("  作り直すなら削除してから再実行")
+else:
+    tmp_dir = EMAP_DIR/"tmp"; tmp_dir.mkdir(exist_ok=True)
+    print("4株まとめて実行中（DB 9.3 GB の走査が律速。30〜90分）...")
+    # ★ 絶対パス起動では PATH / --temp_dir / --data_dir の3つを明示する必要がある
+    #   （いずれも実測で確認。markdown 参照）
+    # ★ --dbmem / --block_size / --cpu はメモリ 1TB を活かすための指定
+    sh(f"PATH={EMAPPER}:$PATH {tool_path('emapper.py')} "
+       f"-i {faa_dir/'all4.faa'} --itype proteins "
+       f"-o all4 --output_dir {EMAP_DIR} --temp_dir {tmp_dir} "
+       f"--data_dir {EGGNOG_DB} --cpu 48 --block_size 12 --dbmem --override",
+       log=LOG_DIR/"emapper_all4.log", timeout=43200)
+
+# ── 結果を読み、株ごとに分ける ───────────────────────────────
+if ann_all.exists() and ann_all.stat().st_size > 0:
+    # コメント行（#）を飛ばし、#query で始まる行をヘッダとして使う
+    hdr = None
+    with open(ann_all) as f:
+        for line in f:
+            if line.startswith("#query"):
+                hdr = line.lstrip("#").rstrip("\n").split("\t"); break
+    em = pd.read_csv(ann_all, sep="\t", comment="#", names=hdr, dtype=str)
+
+    # locus_tag → 株 の対応表。セル15 で作っていればそれを使い、
+    # 無ければ株ごとの faa から作り直す（セル15 を再実行していなくても動くように）
+    if "tag2strain" not in dir():
+        tag2strain = {}
+        for sid in STRAINS:
+            f = faa_dir/f"{sid}.faa"
+            if f.exists():
+                for name, _ in read_fasta(f):
+                    tag2strain[name.split()[0]] = sid
+        print(f"（locus_tag → 株 の対応表を faa から再構築: {len(tag2strain):,} 件）")
+    em["strain"] = em["query"].map(lambda q: tag2strain.get(q, "?"))
+
+    rows = []
+    for sid in STRAINS:
+        sub = em[em.strain == sid]
+        n_in = sum(1 for _ in read_fasta(faa_for[sid])) if sid in faa_for else 0
+        def frac(col):
+            if col not in sub.columns or not len(sub): return 0
+            return int((sub[col].notna() & (sub[col] != "-")).sum())
+        rows.append({"株": sid, "入力タンパク質": n_in, "アノテーション": len(sub),
+                     "付与率": f"{100*len(sub)/n_in:.1f}%" if n_in else "-",
+                     "KEGG_ko": frac("KEGG_ko"), "COG": frac("COG_category"),
+                     "CAZy": frac("CAZy"), "GO": frac("GOs")})
+        # 株ごとにも書き出す（§H で結合しやすいように）
+        sub.to_csv(EMAP_DIR/f"{sid}.emapper.annotations.tsv", sep="\t", index=False)
+    show(pd.DataFrame(rows), "eggNOG-mapper の結果")
+    print()
+    print("株ごとの分割:", EMAP_DIR/"<株ID>.emapper.annotations.tsv")
+    print("未対応の query（株が引けなかったもの）:", int((em.strain == "?").sum()))
+```
+
+---
+# G. 統合リファレンスの構築
+
+## 守ること
+
+1. **配列を連結して1本にしない。** ファイルを連結した multi-FASTA にし、contig は独立レコードのまま
+2. **contig名の先頭に株IDを付ける**（`株ID~contig名`）。Bakta は contig を `contig_1` 等に
+   改名するため、そのままでは株間で名前が衝突する
+3. **マウスゲノムを decoy として入れる。** 宿主RNAの誤マップを防ぐ
+4. **pME008 を入れる。** 両群に存在するので、無いと両群とも unmapped になる
+
+## セル17: 統合FASTA を作る（本番用）
+
+CLAUDE.md §5 のリファレンス構成を組み立てる。
+
+```
+ref/oligo_eptA.fna
+  ├── Bth_VPI~<contig>      野生型ゲノム（2 contig）
+  ├── Bth_St8~<contig>      野生型ゲノム（5 contig）
+  ├── Bun_8492~<contig>     野生型ゲノム（1 contig）
+  ├── Odo_St23~<contig>     野生型ゲノム（4 contig）  ※St24 は入れない
+  ├── pME008~pSL5053        15,808 bp   ※Odoribacter が両群で保持
+  └── mouse~<chr>           decoy（GENCODE vM36 primary assembly）
+```
+
+**`2_reference_qc.ipynb` セル13 で作った `oligo4_bacteria.fna`（細菌4株のみ、23 MB）とは別物。**
+あちらは mappability 測定専用。こちらが本番のマッピングに使う。
+
+### 守っていること（CLAUDE.md §5）
+
+- **配列を連結して1本にしない。** multi-FASTA のまま、contig は独立レコード
+- **contig名の先頭に株IDを付ける**（`株ID~contig名`）。`~` は accession に現れない文字
+- **pME008 を入れる。** Odoribacter が両群で保持しているので、入れないと unmapped になる。
+  W群のエンプティー側を1本入れる（K群との差はスペーサー32 bp のみ。セル4-2）
+- **マウスゲノムを decoy として追加。** 宿主RNAが細菌遺伝子へ誤マップするのを防ぐ
+
+### サイズと中断対策
+
+マウスゲノム（GENCODE vM36 primary assembly、61 contig）は**展開すると約 2.7 GB** ある。
+統合FASTA はそのぶん大きくなる（細菌4株 23 MB + pME008 16 kb + マウス 2.7 GB）。
+`/mnt/scratch` 上なので容量は問題ないが、書き出しに2〜5分かかる。
+
+**★ 中断対策を2つ入れている。**
+
+1. **一時ファイル（`.partial`）に書いてから rename する。**
+   途中で止まっても中途半端な `oligo_eptA.fna` が残らない
+2. **完了判定は contig 数で行う。** ファイルサイズだけで判定すると、
+   中断して残った大きいファイルを「作成済み」と誤認する
+   （実測で、マウスの chr6 まで書いた 1.03 GB / 19 contig のファイルが残っていた）
+
+マウス decoy はヘッダだけ書き換えて**配列行をそのまま流す**ので、
+1染色体（最大195 Mb）をメモリに載せずに済む。
+
+```{r}
+#| vscode: {languageId: r}
+import os, gzip as _gzip
+
+ref_fna = REF_DIR/"oligo_eptA.fna"
+tmp_out = REF_DIR/"oligo_eptA.fna.partial"
+
+# ── 期待される contig 数を先に数える（完了判定に使う）──────────
+#   ★ ファイルサイズだけで「作成済み」と判定してはいけない。
+#     書き出しが途中で中断すると、大きいが不完全なファイルが残る
+#     （実測: マウスの chr6 まで書いた 1.03 GB / 19 contig のファイルが残っていた）
+n_expect = sum(sum(1 for _ in read_fasta(genomes[sid])) for sid in STRAINS)
+if PME008_GB and Path(PME008_GB).exists():
+    n_expect += 1
+if MOUSE_FNA.exists():
+    op = _gzip.open if str(MOUSE_FNA).endswith(".gz") else open
+    with op(MOUSE_FNA, "rt") as f:
+        n_expect += sum(1 for line in f if line.startswith(">"))
+print(f"期待される contig 数: {n_expect}")
+
+n_have = sum(1 for _ in read_fasta(ref_fna)) if ref_fna.exists() else 0
+if ref_fna.exists() and n_have != n_expect:
+    print(f"!! 既存ファイルの contig 数が {n_have} で不一致。作り直します")
+    ref_fna.unlink()
+    n_have = 0
+
+counts, bases = {}, {}
+if n_have == n_expect and n_expect > 0:
+    print(f"既に作成済み: {ref_fna} "
+          f"({ref_fna.stat().st_size/1e9:.2f} GB / {n_have} contig)")
+    print("  作り直すなら削除してから再実行")
+else:
+    # ★ 一時ファイルに書いてから rename する。
+    #   途中で止まっても中途半端な oligo_eptA.fna が残らない
+    with open(tmp_out, "w") as out:
+        def emit(prefix, path):
+            """配列を 60 文字折り返しで書き出す（細菌・プラスミド用）"""
+            n, b = 0, 0
+            for name, seq in read_fasta(path):
+                out.write(f">{prefix}~{name.split()[0]}\n")
+                for i in range(0, len(seq), 60):
+                    out.write(seq[i:i+60] + "\n")
+                n += 1; b += len(seq)
+            counts[prefix] = counts.get(prefix, 0) + n
+            bases[prefix] = bases.get(prefix, 0) + b
+
+        def emit_stream(prefix, path):
+            """ヘッダだけ書き換えて配列行はそのまま流す（マウス decoy 用）。
+            2.7 GB を1染色体ずつメモリに載せずに済み、折り返しも元のまま使える"""
+            op = _gzip.open if str(path).endswith(".gz") else open
+            n, b = 0, 0
+            with op(path, "rt") as f:
+                for line in f:
+                    if line.startswith(">"):
+                        out.write(f">{prefix}~{line[1:].split()[0]}\n")
+                        n += 1
+                    else:
+                        out.write(line)
+                        b += len(line) - 1
+            counts[prefix] = counts.get(prefix, 0) + n
+            bases[prefix] = bases.get(prefix, 0) + b
+
+        # (1) 細菌4株（Odo_St24 は入れない。ゲート1 STOP 判定）
+        for sid in STRAINS:
+            emit(sid, genomes[sid])
+            print(f"  {sid:<10} {counts[sid]:>3} contig / {bases[sid]:>13,} bp")
+
+        # (2) pME008（GenBank から配列を取り出す。W群のエンプティー側）
+        if PME008_GB and Path(PME008_GB).exists():
+            s = _gb_seq(PME008_GB)
+            out.write(">pME008~pSL5053\n")
+            for i in range(0, len(s), 60):
+                out.write(s[i:i+60] + "\n")
+            counts["pME008"], bases["pME008"] = 1, len(s)
+            print(f"  {'pME008':<10}   1 contig / {len(s):>13,} bp"
+                  + ("  ← 15,808 bp と一致" if len(s) == 15808 else "  !! 長さが想定と違う"))
+        else:
+            print("  !! pME008 が無いので入れていません（Odoribacter のリードが unmapped になる）")
+
+        # (3) マウス decoy（ストリームで流す）
+        if MOUSE_FNA.exists():
+            print("  mouse      書き出し中（約2.7 GB。2〜5分）...")
+            emit_stream("mouse", MOUSE_FNA)
+            print(f"  {'mouse':<10} {counts['mouse']:>3} contig / {bases['mouse']:>13,} bp")
+        else:
+            print("  !! マウスゲノムが無いので decoy なしで作成しました（後で入れ直すこと）")
+
+    os.replace(tmp_out, ref_fna)      # 完走したときだけ正式名にする
+    print("\n完了（一時ファイルから rename しました）")
+
+print()
+if counts:
+    df_ref = pd.DataFrame([{"区分": k, "contig数": v, "bp": bases[k]} for k, v in counts.items()])
+    df_ref["Mb"] = (df_ref.bp / 1e6).round(2)
+    show(df_ref[["区分", "contig数", "bp", "Mb"]], "統合FASTA の構成")
+print()
+print(f"{ref_fna}  ({ref_fna.stat().st_size/1e9:.2f} GB / "
+      f"{sum(1 for _ in read_fasta(ref_fna))} contig)")
+```
+
+## セル18: contig名の検算
+
+株IDが全 contig に付いているか、名前の重複が無いかを確認する。
+
+**ここで重複があると、以降のマッピングで「どの株のリードか」が決められなくなる。**
+`assert` で止めるようにしてある。
+
+あわせて **pME008 のスペーサー領域（セル4-2 で特定した 9,421–9,452）が
+統合FASTA 上でも同じ座標にあるか**を確認する。pME008 は改名しただけで
+配列を変えていないので、座標は変わらないはず。
+
+```{r}
+#| vscode: {languageId: r}
+names = [n for n, _ in read_fasta(ref_fna)]
+print(f"contig 総数 {len(names):,} / ユニーク {len(set(names)):,}")
+assert len(names) == len(set(names)), "!! contig名が重複しています"
+
+cc = Counter(n.split("~")[0] for n in names)
+show(pd.DataFrame([{"区分": k, "contig数": v} for k, v in cc.most_common()]),
+     "株ID（接頭辞）ごとの contig 数")
+
+# 株IDが付いていない contig が無いか
+noprefix = [n for n in names if "~" not in n]
+print()
+print("株IDの接頭辞が無い contig:", noprefix[:5] if noprefix else "なし")
+
+print()
+print("先頭5件:")
+for n in names[:5]:
+    print("  >" + n[:80])
+
+# ── pME008 のスペーサー座標を検算 ────────────────────────────
+#   セル4-2 で特定した 9,421–9,452 が統合FASTA 上でも同じ位置にあるか。
+#   改名しただけで配列は変えていないので一致するはず
+if "SPACER_EMPTY" in dir():
+    for n, s in read_fasta(ref_fna):
+        if n.startswith("pME008~"):
+            i = s.upper().find(SPACER_EMPTY)
+            print()
+            print(f"pME008 のスペーサー領域: {i+1:,} – {i+32:,} bp "
+                  f"（セル4-2 の {SPACER_START:,} – {SPACER_END:,} と"
+                  f"{'一致' if i+1 == SPACER_START else '不一致 !!'}）")
+            break
+else:
+    print()
+    print("（セル4-2 を実行していないのでスペーサー座標の検算は省略）")
+```
+
+---
+# H. 統合GTF の構築
+
+**このnotebookで最も重要な成果物。** 以下を属性として持たせる。
+
+| 属性 | 由来 | 用途 |
+|---|---|---|
+| `gene_id` | Bakta の locus_tag | カウントの単位 |
+| `strain` | contig名の接頭辞 | 株ごとの集計 |
+| `feature_class` | Bakta の source | **CDS だけに絞るため**（`Prodigal` = CDS） |
+| `Knumber` / `COG` / `CAZy` / `PFAM` | eggNOG | ステージ6の機能解析 |
+| `product` | Bakta | 解釈 |
+| `mappability` | §J で後から追加 | 株レベルの結論を出すときのフィルタ |
+
+さらに **eptA の3分割 feature** を別行として足す（§4 の方針）。
+
+```
+eptA_full       元のCDS全長        → DE解析から除外する
+eptA_retained   両群に共通する領域   → ★ここで比較する
+eptA_deleted    K群で欠失する領域    → 遺伝子型の確認用
+```
+
+Odoribacter は挿入なので `eptA_5p` / `eptA_3p` に分ける。
+
+## セル19: GFF を1つの表にまとめる
+
+4株の GFF を読み、**`gene_id` に locus_tag を使った1枚の表**にする。
+これが統合GTF の骨格になる。
+
+### `biotype` で feature の種類を区別する
+
+CLAUDE.md §6-3 の要件。**rRNA/tRNA/ncRNA は消さずに GTF に残し、DE 解析からだけ外す。**
+
+| biotype | 元の feature | 扱い |
+|---|---|---|
+| `CDS` | CDS | **DE 解析の対象** |
+| `rRNA` | rRNA | 数える（除去効率の QC に使う）。DE からは外す |
+| `tRNA` | tRNA | 同上 |
+| `ncRNA` | tmRNA / ncRNA / RNase_P_RNA / SRP_RNA / antisense_RNA | 同上 |
+
+rRNA feature が無いと ①除去効率を報告できない ②rRNA リードが隣接CDSに漏れる
+③size factor が歪む（CLAUDE.md §6-3）。
+
+### NCBI/DDBJ GFF と Bakta GFF3 の両方に対応
+
+どちらも属性に `locus_tag=` を持つので、そこを `gene_id` にすれば統一できる。
+本プロジェクトは4株とも既存アノテーション（セル12）なので Bakta 分岐は使わない。
+
+### contig名に株IDを付ける
+
+`contig` 列は `株ID~contig名` にする。**統合FASTA（セル17）の contig 名と一致させる**
+必要があるため。ここがずれると featureCounts が1件もカウントしない。
+
+```{r}
+#| vscode: {languageId: r}
+def parse_attrs(s):
+    """GFF の9列目（属性）を辞書にする。GFF3 の URL エンコードも戻す"""
+    d = {}
+    for kv in s.rstrip(";").split(";"):
+        if "=" in kv:
+            k, v = kv.split("=", 1)
+            d[k] = (v.replace("%2C", ",").replace("%3B", ";")
+                     .replace("%20", " ").replace("%25", "%"))
+    return d
+
+
+# feature の種類 → biotype。rRNA/tRNA/ncRNA は残して DE からだけ外す（CLAUDE.md §6-3）
+KEEP = {"CDS": "CDS", "rRNA": "rRNA", "tRNA": "tRNA", "tmRNA": "ncRNA",
+        "ncRNA": "ncRNA", "RNase_P_RNA": "ncRNA", "SRP_RNA": "ncRNA",
+        "antisense_RNA": "ncRNA"}
+
+rows = []
+for sid in STRAINS:
+    # セル12 の ANNO 辞書から GFF を取る（find_annot() はセル12の書き換えで廃止）
+    gff, src_label = ANNO[sid]["gff"], "NCBI/DDBJ"
+    if not Path(gff).exists():
+        gff, src_label = BAKTA_DIR/sid/f"{sid}.gff3", "Bakta"
+    if not Path(gff).exists():
+        print(f"!! {sid}: GFF がありません"); continue
+
+    op = gzip.open if str(gff).endswith(".gz") else open
+    n0 = len(rows)
+    with op(gff, "rt") as f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            p_ = line.rstrip("\n").split("\t")
+            if len(p_) < 9 or p_[2] not in KEEP:
+                continue
+            a = parse_attrs(p_[8])
+            lt = a.get("locus_tag") or a.get("ID", "").replace("cds-", "").replace("gene-", "")
+            if not lt:
+                continue
+            rows.append(dict(
+                strain=sid,
+                # ★ 統合FASTA（セル17）の contig 名と一致させる
+                contig=f"{sid}~{p_[0]}",
+                annot_source=src_label, biotype=KEEP[p_[2]],
+                start=int(p_[3]), end=int(p_[4]), strand=p_[6],
+                gene_id=lt, gene_name=a.get("gene", ""),
+                product=a.get("product", ""), protein_id=a.get("protein_id", "")))
+    print(f"  {sid:<10} {len(rows)-n0:>5} feature  ← {Path(gff).name}")
+
+gtf_df = pd.DataFrame(rows).drop_duplicates(
+    subset=["strain", "gene_id", "biotype", "start", "end"])
+print()
+print(f"feature 合計: {len(gtf_df):,}")
+
+show(gtf_df.groupby(["strain", "annot_source", "biotype"]).size()
+        .unstack(fill_value=0).reset_index(), "株 × biotype")
+
+# ── 検算 ─────────────────────────────────────────────────────
+print()
+print("★ rRNA が各株にあることを確認（0 の株は rRNA 注釈が欠けている）")
+
+# ── 同一 gene_id が複数行になるケースを調べる ─────────────────
+#   ★ 複数行＝異常とは限らない。GFF は1つの遺伝子を複数の CDS 行で表すことがある。
+#     代表例が programmed frameshift（prfB など）で、同じ locus_tag・同じ protein_id を
+#     持つ2行に分かれる。featureCounts は同じ gene_id の行を
+#     「1遺伝子の複数エクソン」として合算するので、これはむしろ正しい挙動。
+#   → protein_id が同一なら正常（1タンパク質を分割表記しているだけ）、
+#     異なるなら本当に別物が同じ gene_id を名乗っているので要確認、と切り分ける
+multi = (gtf_df.groupby(["strain", "gene_id"])
+               .agg(n=("start", "size"), n_protein=("protein_id", "nunique"),
+                    biotypes=("biotype", lambda x: ",".join(sorted(set(x)))))
+               .reset_index().query("n > 1"))
+print()
+if len(multi):
+    ok   = multi[multi.n_protein <= 1]
+    warn = multi[multi.n_protein > 1]
+    print(f"同一 gene_id が複数行: {len(multi)} 件")
+    if len(ok):
+        print(f"  うち {len(ok)} 件は protein_id が同一 "
+              f"→ 1タンパク質の分割表記（programmed frameshift 等）。正常")
+        det = gtf_df.merge(ok[["strain", "gene_id"]], on=["strain", "gene_id"])
+        show(det[["strain", "gene_id", "gene_name", "biotype", "start", "end",
+                  "product"]].head(10))
+    if len(warn):
+        print(f"  !! うち {len(warn)} 件は protein_id が異なる → 要確認")
+        show(warn.head(10))
+else:
+    print("同一 gene_id が複数行になっている feature はありません")
+print("  （featureCounts は同じ gene_id の行を1遺伝子として合算する）")
+
+# contig 名が統合FASTA と一致しているか
+ref_names = {n for n, _ in read_fasta(ref_fna)} if ref_fna.exists() else set()
+if ref_names:
+    missing = sorted(set(gtf_df.contig) - ref_names)
+    print()
+    print("統合FASTA に無い contig:", missing[:5] if missing else "なし")
+    if missing:
+        print("  !! これがあると featureCounts が1件もカウントしない")
+```
+
+## セル20: eggNOG の結果を GTF の表に結合する
+
+セル16 が株ごとに書き出した `<株ID>.emapper.annotations.tsv` を読み、
+`gene_id`（= locus_tag）で `gtf_df` に結合する。
+
+セル15 で faa のヘッダを locus_tag に付け替えてあるので、
+**eggNOG の `query` 列がそのまま `gene_id` と一致する**。
+
+### 列の取り方
+
+**列名はハードコードせず、ファイルのヘッダから読む。** emapper のバージョンで
+列数が変わるため（元の実装は21列を決め打ちしていた）。
+セル16 が `#query` 行をヘッダとして書き出しているので、普通に `read_csv` で読める。
+
+GTF の属性に持たせるのは次の9列。
+
+| 列 | 用途 |
+|---|---|
+| `KEGG_ko` | ステージ6の KEGG pathway / module 解析の主軸 |
+| `KEGG_Pathway` / `KEGG_Module` | 同上 |
+| `COG_category` | 機能カテゴリの概観 |
+| `CAZy` | **多糖利用。*Bacteroides* 主体の群集なので重要**（CLAUDE.md §7 ステージ6） |
+| `PFAMs` / `EC` / `Preferred_name` | 遺伝子の同定・図のラベル |
+| `Description` | 産物名（GFF の product と補い合う） |
+
+### ★ 検索の成否は COG / PFAM で判断する。KO 付与率で判断しない
+
+実測（4株）:
+
+| 指標 | 付与率 | 評価 |
+|---|---|---|
+| COG_category | **85〜92%** | オーソログ検索は正常に機能している |
+| PFAMs | 81〜87% | 同上 |
+| KEGG_ko | **37〜44%** | **これは正常**。KEGG の Bacteroidetes カバー率の問題 |
+| KEGG_Pathway | 18〜26% | 同上 |
+| CAZy | 1〜3% | eggNOG の CAZy 付与は保守的 |
+
+「細菌なら KO が 50〜70%」という目安は大腸菌・枯草菌などモデル生物のもので、
+**腸内細菌（*Bacteroidetes*）には当てはまらない**。KEGG はモデル生物中心に
+構築されており、腸内細菌の多くの遺伝子に KO が割り当てられていない。
+
+**COG が 85% 以上付いていれば検索は成功している。**
+
+この実測値は CLAUDE.md §7 ステージ6 の方針の裏付けになる。
+
+> アノテーションは KEGG pathway だけにしない。**KEGG module・CAZy/dbCAN（PUL）・
+> GMM/GBM・TCDB** を併用
+
+KEGG_Pathway が付くのは CDS の2割なので、KEGG だけに頼ると解析対象が
+全CDSの2割に縛られる。
+
+CAZy が 1〜3% と少ないのは eggNOG の付与が保守的なため。*Bacteroides* の実際の
+CAZyme は通常 200〜300 個ある。**多糖利用を論じるなら dbCAN を別途かける**
+ことを検討する（CLAUDE.md が dbCAN の併用を挙げているのはこのため）。
+Odo_St23 の CAZy が 24 個と特に少ないのは、*Odoribacter* が *Bacteroides* ほど
+多糖分解に特化していない（主に短鎖脂肪酸産生）ことと整合する。
+
+```{r}
+#| vscode: {languageId: r}
+# ── セル16 が株ごとに書き出した TSV を読む ───────────────────
+#   元の実装は <株ID>.emapper.annotations を列数決め打ち（21列）で読んでいたが、
+#   セル16 を「4株まとめて1回実行 → 株ごとに分割」に変えたので、
+#   ヘッダ付きの <株ID>.emapper.annotations.tsv を読む形にする。
+#   列名はファイルのヘッダから取る（emapper のバージョンで列数が変わるため）
+emap_all = []
+for sid in STRAINS:
+    a = EMAP_DIR/f"{sid}.emapper.annotations.tsv"
+    if not a.exists():
+        print(f"  {sid}: {a.name} がありません（セル16 を先に実行）")
+        continue
+    e = pd.read_csv(a, sep="\t", dtype=str)
+    emap_all.append(e)
+    print(f"  {sid:<10} {len(e):>5} 件")
+
+if not emap_all:
+    print()
+    print("!! eggNOG の結果がありません。セル16 を先に実行してください")
+else:
+    emap = pd.concat(emap_all, ignore_index=True)
+    print()
+    print(f"eggNOG アノテーション 合計: {len(emap):,} 件 / 列 {emap.shape[1]}")
+
+    # GTF の属性に持たせる列（存在するものだけ）
+    WANT = ["query", "KEGG_ko", "KEGG_Pathway", "KEGG_Module", "COG_category",
+            "CAZy", "PFAMs", "EC", "Preferred_name", "Description"]
+    use = [c_ for c_ in WANT if c_ in emap.columns]
+    missing_cols = [c_ for c_ in WANT if c_ not in emap.columns]
+    if missing_cols:
+        print("  （この emapper 出力に無い列:", ", ".join(missing_cols), "）")
+
+    # eggNOG は "-" を欠損として使うので NaN に揃える
+    emap_use = emap[use].replace("-", pd.NA).drop_duplicates(subset=["query"])
+
+    # 既に結合済みなら列を作り直す（セルの再実行に耐えるように）
+    gtf_df = gtf_df.drop(columns=[c_ for c_ in use if c_ != "query" and c_ in gtf_df.columns],
+                         errors="ignore")
+    gtf_df = (gtf_df.merge(emap_use, left_on="gene_id", right_on="query", how="left")
+                    .drop(columns=["query"]))
+
+    # ── 付与率を biotype 別に確認 ────────────────────────────
+    rows = []
+    for sid in STRAINS:
+        sub = gtf_df[(gtf_df.strain == sid) & (gtf_df.biotype == "CDS")]
+        if not len(sub):
+            continue
+        d = {"株": sid, "CDS数": len(sub)}
+        for col in ("KEGG_ko", "KEGG_Pathway", "COG_category", "CAZy", "PFAMs"):
+            if col in sub.columns:
+                n = int(sub[col].notna().sum())
+                d[col] = f"{n} ({100*n/len(sub):.0f}%)"
+        rows.append(d)
+    show(pd.DataFrame(rows), "CDS への eggNOG 付与状況（biotype == CDS のみ）")
+
+    cds = gtf_df[gtf_df.biotype == "CDS"]
+    print()
+    # ★ 検索が成功したかは COG / PFAM で判断する。KO 付与率で判断してはいけない。
+    #   KEGG は Bacteroidetes のカバーが薄く、腸内細菌では KO が 35〜45% しか付かない
+    #   （大腸菌等のモデル生物なら 50〜70% だが、その目安は当てはまらない）
+    if "COG_category" in cds.columns:
+        cog = 100 * cds.COG_category.notna().mean()
+        print(f"COG 付与率: {cog:.1f}%"
+              + ("  → オーソログ検索は正常" if cog >= 80
+                 else "  !! 低い。faa のヘッダか DB を確認すること"))
+    if "KEGG_ko" in cds.columns:
+        ko = 100 * cds.KEGG_ko.notna().mean()
+        print(f"KO 付与率 : {ko:.1f}%"
+              + "  → 腸内細菌（Bacteroidetes）では 35〜45% が普通。KEGG のカバー率の問題で、"
+                "検索の失敗ではない")
+    print()
+    print("★ KEGG だけに頼らないこと（CLAUDE.md §7 ステージ6）。")
+    print("   KEGG_Pathway が付くのは CDS の 18〜26% しかない。")
+    print("   KEGG module・CAZy/dbCAN（PUL）・GMM/GBM・TCDB を併用する。")
+    print("   eggNOG の CAZy は保守的で 1〜3% しか付かないので、")
+    print("   多糖利用を論じるなら dbCAN を別途かけることを検討する。")
+    print()
+    print("※ rRNA/tRNA/ncRNA には eggNOG が付かない（タンパク質ではないため）。")
+    print("   これは正常。DE からは外すが GTF には残す（CLAUDE.md §6-3）")
+```
+
+## セル21: eptA の feature を分割する（★CLAUDE.md §4 の核心）
+
+eptA をそのまま DE 結果に載せると**「中程度に低下した遺伝子」と誤読される**。
+遺伝子型による見かけの低下であって、発現制御の変化ではないため。
+
+### 作る feature
+
+**欠失の株**（Bth_VPI / Bth_St8 / Bun_8492）
+
+| gene_id | 内容 |
+|---|---|
+| `<locus_tag>` | 元のCDS全長。**DE 解析から除外する**（`exclude_from_DE=true`） |
+| `<locus_tag>_deleted` | K群で欠失する領域 → 遺伝子型の確認用（K群でゼロになるはず） |
+| `<locus_tag>_retained` | 両群に共通する領域 → **★ここで比較する** |
+
+**★ 残存領域が2区間に分かれても、どちらも同じ `gene_id` にする。**
+欠失が CDS の内部にあると残存は 5'側 と 3'側 の2区間になるが、
+featureCounts は同じ gene_id の行を合算するので、
+CLAUDE.md §4 の「`eptA_retained` で比較する」が1つのカウントとして実現できる。
+
+**挿入の株**（Odo_St23）
+
+| gene_id | 内容 |
+|---|---|
+| `<locus_tag>_5p` | 挿入点より5'側 → 両群で転写される |
+| `<locus_tag>_3p` | 挿入点より3'側 → K群でゼロなら転写終結、残っていれば読み抜け |
+
+### ★ 鎖を考慮する
+
+**eptA の鎖は株ごとに違う**（実測）。
+
+| 株 | locus_tag | 鎖 |
+|---|---|---|
+| Bth_VPI | `BT_RS09185` | **−** |
+| Bth_St8 | `CE91St8_20540` | + |
+| Bun_8492 | `NQ510_RS14730` | + |
+| Odo_St23 | `CE91St23_40970` | **−** |
+
+マイナス鎖の遺伝子では**ゲノム座標の大きい側が 5'** になる。
+挿入の 5'/3' 分割でこれを間違えると、「どちらが転写終結の影響を受ける側か」が逆になる。
+
+### ★ product 名では照合できない
+
+DDBJ の2株（Bth_St8 / Odo_St23）は product が `membrane protein` で、
+`phosphoethanolamine` を含まない（実測）。**座標の重なりで特定する。**
+
+### ★ GFF の CDS と断片由来の座標が食い違う場合は GFF を採る
+
+**Bth_VPI で 198 bp の食い違いがあった。**
+
+```
+GFF の CDS : 2,274,992 – 2,276,695  (1,704 bp)
+断片由来    : 2,275,190 – 2,276,695  (1,506 bp)   ← SnapGene の lptA feature が部分的
+```
+
+マッピングは GFF の CDS 全長に対して行われるので、**カウントは CDS 基準になる**。
+残存は 1,704 − 504 = **1,200 bp**（断片基準なら 1,002 bp）。
+この違いは遺伝子型だけで期待される log2FC に効くので、セル内で食い違いを表示して確認する。
+
+```{r}
+#| vscode: {languageId: r}
+import math
+
+# ── eptA の feature を分割する（CLAUDE.md §4）──────────────────
+#   そのまま DE に載せると「中程度に低下した遺伝子」と誤読されるので、
+#   元のCDSは除外し、両群に共通する領域だけを比較対象にする。
+#
+#   欠失の株（Bth_VPI / Bth_St8 / Bun_8492）:
+#     <locus_tag>_deleted   K群で欠失する領域     → 遺伝子型の確認用（K群でゼロ）
+#     <locus_tag>_retained  両群に共通する領域     → ★ここで比較する
+#       ※ 欠失が CDS の内部にある場合、残存領域は2区間になる。
+#         ★ どちらも同じ gene_id にする。featureCounts は同じ gene_id の行を
+#           合算するので、CLAUDE.md §4 の「eptA_retained で比較する」が
+#           1つのカウントとして実現できる
+#   挿入の株（Odo_St23）:
+#     <locus_tag>_5p  挿入点より5'側 → 両群で転写される
+#     <locus_tag>_3p  挿入点より3'側 → K群でゼロなら転写終結、残っていれば読み抜け
+#
+#   元の CDS 行は残したまま exclude_from_DE=true を立てる（セル23 で GTF に書く）。
+if "spec" not in dir():
+    spec = QC_DIR/"eptA_mutation_spec.tsv"
+spec_df = pd.read_csv(spec, sep="\t")
+
+extra_rows, exclude_ids, eptA_info = [], set(), []
+
+for _, r in spec_df.iterrows():
+    sid = r["strain"]
+    if sid not in STRAINS:
+        continue
+    gs, ge = r.get("cds_genome_start"), r.get("cds_genome_end")
+    ms, me = r.get("mut_genome_start"), r.get("mut_genome_end")
+    if pd.isna(gs) or pd.isna(ms):
+        print(f"!! {sid}: ゲノム座標が未確定（§C を実行してください）"); continue
+    gs, ge, ms, me = int(gs), int(ge), int(ms), int(me)
+
+    # ── 座標が重なる CDS を GFF 由来の表から探す ──────────────
+    #   ★ product 名では照合できない。DDBJ の2株（Bth_St8 / Odo_St23）は
+    #     product が "membrane protein" で、"phosphoethanolamine" を含まない（実測）
+    cand = gtf_df[(gtf_df.strain == sid) & (gtf_df.biotype == "CDS") &
+                  (gtf_df.start <= ge) & (gtf_df.end >= gs)]
+    if cand.empty:
+        print(f"!! {sid}: 対応する CDS が見つかりません ({gs:,}-{ge:,})"); continue
+    # 重なりが最も大きい CDS を採用する
+    ov = cand.apply(lambda x: min(x.end, ge) - max(x.start, gs) + 1, axis=1)
+    cds = cand.loc[ov.idxmax()]
+    parent, contig, strand = cds.gene_id, cds.contig, cds.strand
+    cds_s, cds_e = int(cds.start), int(cds.end)
+    exclude_ids.add(parent)
+
+    # ── 検算: 断片から得た座標と GFF の CDS がどれだけ食い違うか ──
+    #   ★ Bth_VPI では SnapGene の lptA feature が部分的で、
+    #     断片由来 1,506 bp に対し GFF の CDS は 1,704 bp だった（198 bp の差）。
+    #     GTF には GFF の実座標を使う
+    print(f"{sid:<10} eptA = {parent:<16} {contig}:{cds_s:,}-{cds_e:,} ({strand}) "
+          f"{cds_e-cds_s+1:,} bp  / 断片由来 {ge-gs+1:,} bp"
+          + ("" if (cds_e-cds_s+1) == (ge-gs+1)
+             else f"  ← {abs((cds_e-cds_s+1)-(ge-gs+1))} bp 食い違う（GFF を採用）"))
+
+    def add(suffix, s, e, note):
+        """GTF に足す行。s>e なら何もしない"""
+        if e < s:
+            return
+        extra_rows.append(dict(
+            strain=sid, contig=contig, annot_source="eptA_spec", biotype="CDS",
+            start=s, end=e, strand=strand,
+            gene_id=f"{parent}_{suffix}", gene_name=f"eptA_{suffix}",
+            product=note, parent_gene_id=parent))
+
+    if r["mut_type"] == "deletion":
+        # 欠失区間は CDS の範囲にクリップする（CDS 外にはみ出すことがある）
+        d_s, d_e = max(ms, cds_s), min(me, cds_e)
+        add("deleted", d_s, d_e, "eptA: K群で欠失する領域（遺伝子型の確認用。K群でゼロ）")
+        # 残存領域（最大2区間）。★ どちらも同じ gene_id "_retained" にして合算させる
+        if d_s > cds_s:
+            add("retained", cds_s, d_s - 1, "eptA: 両群に共通する領域（ここで比較する）")
+        if d_e < cds_e:
+            add("retained", d_e + 1, cds_e, "eptA: 両群に共通する領域（ここで比較する）")
+        kind = f"欠失 {d_e-d_s+1:,} bp"
+        retained_bp = (cds_e - cds_s + 1) - (d_e - d_s + 1)
+    else:
+        # ── 挿入: 挿入点で 5'/3' に分ける ───────────────────
+        #   ★ 鎖を考慮する。マイナス鎖の遺伝子では、ゲノム座標の大きい側が 5' になる
+        ip = ms
+        if strand == "+":
+            add("5p", cds_s, ip, "eptA: 挿入点より5'側（両群で転写される）")
+            add("3p", ip + 1, cds_e, "eptA: 挿入点より3'側（K群でゼロなら転写終結）")
+            five_bp, three_bp = ip - cds_s + 1, cds_e - ip
+        else:
+            add("5p", ip, cds_e, "eptA: 挿入点より5'側（両群で転写される）")
+            add("3p", cds_s, ip - 1, "eptA: 挿入点より3'側（K群でゼロなら転写終結）")
+            five_bp, three_bp = cds_e - ip + 1, ip - cds_s
+        kind = f"挿入（5' {five_bp:,} bp / 3' {three_bp:,} bp）"
+        retained_bp = cds_e - cds_s + 1
+
+    # ── 遺伝子型だけで期待される log2FC を CDS 基準で計算し直す ──
+    #   ★ spec_df の predicted_log2FC_genotype_only は「断片由来の CDS 長」で
+    #     計算されているので、GFF の CDS 長と食い違う株（Bth_VPI）ではずれる。
+    #     カウントは GFF の CDS に対して行われるので、こちらで計算し直す。
+    #     これがステージ4で陽性対照に使う基準線になる
+    cds_len = cds_e - cds_s + 1
+    if r["mut_type"] == "deletion":
+        pred_cds = (f"{math.log2(retained_bp/cds_len):+.2f}" if retained_bp
+                    else "≈-inf")
+    else:
+        # 挿入: 3'側が完全に落ちれば 5'側だけが残る。読み抜ければ変化なし
+        pred_cds = f"0 〜 {math.log2(five_bp/cds_len):+.2f}"
+
+    eptA_info.append({"株": sid, "eptA の locus_tag": parent, "鎖": strand,
+                      "CDS": f"{cds_s:,}-{cds_e:,}", "CDS長": cds_len,
+                      "変異": kind, "残存bp": retained_bp,
+                      "残存率": f"{100*retained_bp/cds_len:.1f}%",
+                      "予測log2FC(CDS基準)": pred_cds,
+                      "予測log2FC(断片基準)": r.get("predicted_log2FC_genotype_only", "")})
+
+print()
+show(pd.DataFrame(eptA_info), "eptA の特定結果")
+print("※ 予測log2FC は「発現制御に変化が無い場合に eptA_full で出るはずの値」。")
+print("   ステージ4で陽性対照に使う基準線。これより下なら本当に下がっており、")
+print("   上なら代償的に上がっていることになる（CLAUDE.md §4）。")
+print("   CDS基準と断片基準が食い違う株（Bth_VPI）では CDS基準を使う。")
+
+df_extra = pd.DataFrame(extra_rows)
+if len(df_extra):
+    d = df_extra.copy()
+    d["長さ"] = d.end - d.start + 1
+    show(d[["strain", "gene_id", "strand", "start", "end", "長さ", "product"]],
+         "GTF に追加する eptA feature")
+    # gene_id ごとの合計長（_retained が2区間に分かれている場合の確認）
+    print()
+    print("gene_id ごとの合計長（_retained が2区間なら合算される）:")
+    for (sid_, gid), g_ in d.groupby(["strain", "gene_id"]):
+        print(f"  {sid_:<10} {gid:<30} {len(g_)} 区間 / 計 {g_['長さ'].sum():,} bp")
+
+print()
+print("DE解析から除外する元CDS（eptA_full）:")
+for i in sorted(exclude_ids):
+    print("  ", i)
+```
+
+## セル22: pME008 の注釈を GTF 行に変換
+
+**Bakta は使わず、pSL5053 の既存アノテーションを活かす。**
+Cas6/7/8・TnsA/B/C・TniQ・tetX1・PcfxA が注釈済みなので、de novo で付け直すと
+hypothetical protein に潰れてしまう。
+
+### 元の実装から直した4点
+
+**1. CAST スペーサーを明示的に追加する。**
+32 bp しかないので長さフィルタでは落ちるが、**W群とK群を判別する唯一の配列差**
+（セル4-2、CLAUDE.md §2）。ステージ4でカバレッジを見るための feature として必ず入れる。
+
+**2. 鎖を GenBank の `complement()` から取得する。**
+元の実装は全て `+` 固定だったが、`Ori_e_coli`・`bla`・`rep` は実際にはマイナス鎖。
+**`-s 2`（reverse-stranded）でカウントするので、鎖を間違えると 0 になる。**
+
+**3. `biotype` を `CDS` と `other` に分ける。**
+元の実装は promoter や misc_feature まで `CDS` にしていたため、
+`From_p2126`（4,695 bp の由来注記）のような feature が DE 解析に入ってしまう。
+DE の対象は `CDS` だけ（CLAUDE.md §6-3）。
+
+**4. `Translation <start>-<end>` の重複を除外する。**
+SnapGene が CDS に付ける補助ラベルで、**同一 CDS が2行になる**（実測で8件）。
+放置すると featureCounts が同じ領域を二重に数える。
+
+### できあがる構成（13 CDS + 9 other）
+
+```
+   797– 1,489  TnsA_extraAA   693 bp  ┐
+ 1,539– 3,350  TnsB         1,812 bp  │
+ 3,399– 4,391  TnsC           993 bp  ├ CAST 転移機構
+ 4,439– 5,623  TniQ         1,185 bp  │
+ 5,673– 7,595  Cas8         1,923 bp  │
+ 7,645– 8,703  Cas7         1,059 bp  ├ CRISPR 認識
+ 8,730– 9,329  Cas6           600 bp  ┘
+      9,421– 9,452  CAST_spacer 32 bp  ★ 群の判別子（biotype=other）
+ 9,833–10,912  TetX1        1,080 bp  ← 両群にある。判別に使えない
+11,352–11,723  traJ           372 bp
+11,984–12,784  ermF           801 bp
+12,956–13,544  Ori_e_coli     589 bp (−)
+13,614–14,474  bla            861 bp (−)
+14,647–15,711  rep          1,065 bp (−)
+```
+
+CAST_spacer が Cas6 の直後にあり、CDS とは重ならない。
+最後に重要 feature（TetX1 / Cas / Tns / TniQ / PcfxA / ermF / CAST_spacer）が
+入っているかを自動で確認する。
+
+```{r}
+#| vscode: {languageId: r}
+# ── pME008（pSL5053）の注釈を GTF 行に変換する ────────────────
+#   Bakta は使わず、SnapGene/GenBank の既存アノテーションを活かす。
+#   pSL5053 は Cas6/7/8・TnsA/B/C・TniQ・tetX1・PcfxA が注釈済みなので、
+#   de novo でアノテーションし直すと hypothetical protein に潰れてしまう。
+pme_rows = []
+
+if not (PME008_GB and Path(PME008_GB).exists()):
+    print("!! pME008 の GenBank がありません")
+else:
+    _txt = Path(PME008_GB).read_text(errors="replace")
+
+    # ★ GenBank から feature を読む。load_features() は鎖を返さないので、
+    #   ここでは complement() の有無から鎖を取る（元の実装は全て "+" にしていた）
+    feats = []
+    for m in re.finditer(r"^\s{5}(\S+)\s+(complement\()?<?(\d+)\.\.>?(\d+)\)?",
+                         _txt, re.M):
+        kind, comp, s0, e0 = m.group(1), m.group(2), int(m.group(3)), int(m.group(4))
+        seg = _txt[m.end():m.end() + 500]
+        lab = re.search(r'/label="([^"]+)"', seg)
+        feats.append((kind, lab.group(1) if lab else kind, s0, e0,
+                      "-" if comp else "+"))
+
+    # ★ biotype を分ける。promoter や misc_feature を CDS にすると DE に載ってしまう
+    #   （元の実装は全て biotype="CDS" にしていた）
+    #   DE の対象にするのは CDS だけ。他は数えるが DE からは外す（CLAUDE.md §6-3）
+    BIO = {"CDS": "CDS", "gene": None,            # gene は CDS と重複するので捨てる
+           "promoter": "other", "misc_feature": "other", "terminator": "other",
+           "rep_origin": "other", "oriT": "other"}
+
+    seen = {}
+    for kind, name, s0, e0, strand in feats:
+        bt = BIO.get(kind, None)
+        if bt is None:
+            continue
+        if kind == "primer" or name.lower().startswith("osl"):
+            continue                                   # primer は落とす
+        # ★ SnapGene は CDS に /label="Translation <start>-<end>" という
+        #   補助ラベルを付けることがあり、同一 CDS が2行になる（実測で8件）。
+        #   このままだと featureCounts が同じ領域を二重に数えるので落とす
+        if re.fullmatch(r"Translation\s+\d+-\d+", name.strip()):
+            continue
+        # CDS は長さを問わず残す。それ以外は 150 bp 以上か、promoter/terminator のみ
+        if bt != "CDS" and (e0 - s0 + 1) < 150 and kind not in ("promoter", "terminator"):
+            continue
+        gid = "pME008_" + re.sub(r"[^A-Za-z0-9]+", "_", name)[:40].strip("_")
+        # 同名 feature があれば連番を付ける（元の実装は drop_duplicates で黙って捨てていた）
+        if gid in seen:
+            seen[gid] += 1; gid = f"{gid}_{seen[gid]}"
+        else:
+            seen[gid] = 1
+        pme_rows.append(dict(strain="pME008", contig="pME008~pSL5053",
+                             annot_source="pME008_gb", biotype=bt,
+                             start=s0, end=e0, strand=strand,
+                             gene_id=gid, gene_name=name[:40],
+                             product=f"pME008 {kind}: {name}"))
+
+    # ── ★ CAST スペーサー領域を必ず入れる（セル4-2 で特定）──────
+    #   32 bp しかないので上の長さフィルタでは落ちてしまうが、
+    #   W群と K群を判別する唯一の配列差なので明示的に追加する（CLAUDE.md §2）
+    if "SPACER_START" in dir():
+        pme_rows.append(dict(
+            strain="pME008", contig="pME008~pSL5053", annot_source="pME008_gb",
+            biotype="other", start=SPACER_START, end=SPACER_END, strand="+",
+            gene_id="pME008_CAST_spacer", gene_name="CAST_spacer",
+            product="pME008: CAST spacer (32 bp). W群=stuffer / K群=eptA標的。"
+                    "K群ではこの領域のリードがマップされずカバレッジが落ちる"))
+        print(f"CAST スペーサーを追加: {SPACER_START:,}-{SPACER_END:,} (32 bp)")
+    else:
+        print("!! セル4-2 を実行していないのでスペーサーを追加できません")
+
+df_pme = pd.DataFrame(pme_rows)
+if len(df_pme):
+    d = df_pme.copy(); d["長さ"] = d.end - d.start + 1
+    show(d.groupby("biotype").size().reset_index(name="件数"), "biotype 別")
+    show(d[d.biotype == "CDS"][["gene_id", "strand", "start", "end", "長さ"]],
+         f"pME008 の CDS（{int((d.biotype=='CDS').sum())}件。DE の対象）")
+    show(d[d.biotype == "other"][["gene_id", "strand", "start", "end", "長さ"]].head(20),
+         f"pME008 のその他 feature（{int((d.biotype=='other').sum())}件。DE からは外す）")
+
+    # ── 検算: 重要な feature が入っているか ────────────────────
+    print()
+    print("重要 feature の確認:")
+    for key in ("TetX1", "Cas6", "Cas7", "Cas8", "TnsA", "TnsB", "TnsC", "TniQ",
+                "PcfxA", "ermF", "CAST_spacer"):
+        hit = d[d.gene_name.str.contains(key, case=False, na=False)]
+        print(f"  {key:<12} {'OK' if len(hit) else '!! 無い':<8}"
+              + (f"  {hit.iloc[0].gene_id} ({hit.iloc[0]['長さ']:,} bp, "
+                 f"{hit.iloc[0].biotype})" if len(hit) else ""))
+```
+
+## セル23: 統合GTF を書き出す
+
+セル19（GFF）+ セル21（eptA の分割）+ セル22（pME008）を1つにまとめ、
+`ref/oligo_eptA.gtf` に書き出す。
+
+### ★ mappability を属性に持たせる（CLAUDE.md §7 ステージ2）
+
+> 株レベルの所見を出すたびに、その遺伝子が区別可能だったかを確認できるようにする
+
+§J（このnotebook）で測り直した値があればそれを使い、無ければステージ1
+（`2_reference_qc.ipynb`、細菌4株のみのリファレンス）の値を使う。
+eptA の分割 feature には親CDSの値を引き継ぐ。
+
+### feature 型は `transcript`
+
+過去プロジェクトと同じ作法（Rsubread の `GTF.featureType="transcript"`）。
+
+**featureCounts では `-t transcript -g gene_id -s 2` を指定すること。**
+
+### 属性に入れるもの
+
+`gene_name` / `product` / `strain` / `biotype` / `annot_source` / `protein_id` /
+`parent_gene_id` / **`mappability`** / `top_confused_with` /
+`KEGG_ko` / `KEGG_Pathway` / `KEGG_Module` / `COG_category` / `CAZy` / `PFAMs` /
+`EC` / `Preferred_name` / `Description` / **`exclude_from_DE`**
+
+### DE の対象と除外
+
+| 区分 | 件数 | 扱い |
+|---|---|---|
+| CDS（eptA_full を除く） | 17,922 | **DE の対象** |
+| うち eptA の分割 feature | 10 | `_retained` で比較する（CLAUDE.md §4） |
+| rRNA / tRNA / ncRNA | 57 / 260 / 6 | 数えるが DE からは外す（CLAUDE.md §6-3） |
+| other（pME008 の promoter 等） | 9 | 同上。`CAST_spacer` を含む |
+| eptA_full | 4 | `exclude_from_DE=true`（CLAUDE.md §4） |
+
+### ★ Bth_St8 の `_retained` が 15 bp しかない件
+
+セル末尾で注意を表示する。この15 bpは CDS の5'端にあり、**直前の BamA 遺伝子と
+14 bp 重複している**（CLAUDE.md §2「前の遺伝子と被るので残した」）。
+
+150 bp のリードでカウントすると、**大半は BamA 由来のリードがこの15 bpに重なったもの**
+になる。したがって Bth_St8 については
+
+- `_retained` を「eptA の残存発現」として解釈してはいけない
+- 実質的に**完全ノックアウト**として扱い、K群では eptA 発現ゼロと見なす
+- `_deleted`（1,689 bp）が K群でゼロになることを遺伝子型の確認に使う
+
+他の3株（VPI 1,200 bp / B.uni 1,126 bp / Odo 5'側 337 bp）は十分な長さがあるので、
+`_retained` での比較が成立する。
+
+```{r}
+#| vscode: {languageId: r}
+gtf_path = REF_DIR/"oligo_eptA.gtf"
+
+# ── 3つの表を結合する ────────────────────────────────────────
+all_df = pd.concat(
+    [gtf_df.assign(parent_gene_id=""), df_extra, df_pme.assign(parent_gene_id="")],
+    ignore_index=True)
+
+# 元の eptA CDS（分割したもの）を DE から外す印を立てる（CLAUDE.md §4）
+all_df["exclude_from_DE"] = all_df.gene_id.isin(exclude_ids)
+
+# ── ★ mappability を属性に持たせる（CLAUDE.md §7 ステージ2）──
+#   「株レベルの所見を出すたびに、その遺伝子が区別可能だったかを確認できるように」
+#   §J（このnotebook）で測り直した値があればそれを使い、無ければ
+#   ステージ1（2_reference_qc.ipynb）の値を使う
+map_src = None
+for cand_ in (MAP_DIR/"cds_mappability.tsv", ROOT/"mappability"/"cds_mappability.tsv"):
+    if cand_.exists():
+        map_src = cand_; break
+if map_src:
+    mp_ = pd.read_csv(map_src, sep="\t")[["strain", "gene", "mappability",
+                                          "top_confused_with"]]
+    all_df = all_df.merge(mp_, left_on=["strain", "gene_id"],
+                          right_on=["strain", "gene"], how="left").drop(columns=["gene"])
+    # eptA の分割 feature には親CDSの値を引き継ぐ
+    par = (mp_.set_index(["strain", "gene"])["mappability"].to_dict())
+    m_ = all_df.parent_gene_id.fillna("") != ""
+    all_df.loc[m_, "mappability"] = [
+        par.get((s_, p_), float("nan"))
+        for s_, p_ in zip(all_df.loc[m_, "strain"], all_df.loc[m_, "parent_gene_id"])]
+    n_mp = int(all_df.mappability.notna().sum())
+    print(f"mappability を付与: {n_mp:,} feature  ← {map_src}")
+    if map_src == ROOT/"mappability"/"cds_mappability.tsv":
+        print("  ※ ステージ1（細菌4株のみのリファレンス）で測った値。")
+        print("     §J で pME008 + マウス decoy 込みで測り直したら、このセルを再実行すること")
+else:
+    all_df["mappability"] = float("nan")
+    all_df["top_confused_with"] = ""
+    print("!! mappability のファイルが無いので属性に入れていません")
+
+# ── GTF を書き出す ───────────────────────────────────────────
+#   ★ feature 型は "transcript"。過去プロジェクトと同じ作法
+#     （Rsubread の GTF.featureType="transcript"）。
+#     featureCounts では -t transcript -g gene_id で集計すること
+def esc(v):
+    """GTF の属性値に使えない文字を置き換える"""
+    if pd.isna(v):
+        return "NA"
+    return str(v).replace('"', "'").replace(";", ",").replace("\n", " ")
+
+ATTRS = ["gene_name", "product", "strain", "biotype", "annot_source", "protein_id",
+         "parent_gene_id", "mappability", "top_confused_with",
+         "KEGG_ko", "KEGG_Pathway", "KEGG_Module", "COG_category", "CAZy",
+         "PFAMs", "EC", "Preferred_name", "Description", "exclude_from_DE"]
+attrs = [a for a in ATTRS if a in all_df.columns]
+
+# contig・開始位置で並べる（IGV 等で見やすくするため。featureCounts は順不同でも可）
+all_df = all_df.sort_values(["contig", "start", "end"]).reset_index(drop=True)
+
+with open(gtf_path, "w") as f:
+    for _, r in all_df.iterrows():
+        a = f'gene_id "{r.gene_id}"; transcript_id "{r.gene_id}"; '
+        a += "".join(f'{k} "{esc(r.get(k))}"; ' for k in attrs)
+        f.write(f"{r.contig}\t{r.annot_source}\ttranscript\t"
+                f"{r.start}\t{r.end}\t.\t{r.strand}\t0\t{a.strip()}\n")
+
+print()
+print(f"{len(all_df):,} 行 → {gtf_path}  ({gtf_path.stat().st_size/1e6:.1f} MB)")
+
+# ── 検算 ─────────────────────────────────────────────────────
+show(all_df.groupby(["strain", "biotype"]).size().unstack(fill_value=0).reset_index(),
+     "株 × biotype")
+
+print()
+print(f"DE の対象（biotype == CDS かつ exclude_from_DE == False）: "
+      f"{int(((all_df.biotype=='CDS') & (~all_df.exclude_from_DE)).sum()):,}")
+print(f"  うち eptA の分割 feature: "
+      f"{int((all_df.annot_source=='eptA_spec').sum())}")
+print(f"DE から外すもの: rRNA {int((all_df.biotype=='rRNA').sum())} / "
+      f"tRNA {int((all_df.biotype=='tRNA').sum())} / "
+      f"ncRNA {int((all_df.biotype=='ncRNA').sum())} / "
+      f"other {int((all_df.biotype=='other').sum())} / "
+      f"eptA_full {int(all_df.exclude_from_DE.sum())}")
+
+# contig 名が統合FASTA と一致しているか（最重要の検算）
+ref_names = {n for n, _ in read_fasta(ref_fna)}
+missing = sorted(set(all_df.contig) - ref_names)
+print()
+print("統合FASTA に無い contig:", missing[:5] if missing else "なし")
+if missing:
+    print("  !! これがあると featureCounts が1件もカウントしない")
+
+print()
+print("★ featureCounts では -t transcript -g gene_id -s 2 を指定すること")
+print("   （feature 型を 'transcript' にしてあるため。CLAUDE.md §6-1）")
+
+# ── ★ Bth_St8 の _retained が極端に短い件（解釈上の注意）─────
+st8 = all_df[(all_df.gene_id.astype(str).str.endswith("_retained")) &
+             (all_df.strain == "Bth_St8")]
+if len(st8):
+    tot = int((st8.end - st8.start + 1).sum())
+    print()
+    print("=" * 72)
+    print(f"★ 注意: Bth_St8 の eptA_retained は {tot} bp しかない")
+    print("=" * 72)
+    print("  この領域は CDS の5'端にあり、直前の BamA 遺伝子と 14 bp 重複している")
+    print("  （CLAUDE.md §2: 前の遺伝子と被るので残した）。")
+    print("  150 bp のリードでカウントすると、**大半は BamA 由来のリードが")
+    print("  この 15 bp に重なったもの**になる。")
+    print()
+    print("  → Bth_St8 については:")
+    print("     ・_retained を「eptA の残存発現」として解釈してはいけない")
+    print("     ・実質的に完全ノックアウトとして扱い、K群では eptA 発現ゼロと見なす")
+    print("     ・_deleted（1,689 bp）が K群でゼロになることを遺伝子型の確認に使う")
+    print()
+    print("  他の3株（VPI 1,200 bp / B.uni 1,126 bp / Odo 5'側 337 bp）は")
+    print("  十分な長さがあるので、_retained での比較が成立する。")
+
+_ = archive_to_project(REF_DIR, quiet=True)
+```
+
+---
+# I. index の構築
+
+bowtie2 と salmon の両方を作る。**Bth 2株が近縁なので Salmon を並走させる**
+（featureCounts の fraction mode は曖昧リードを 1/NH で等分するだけだが、
+Salmon の EM は一意リードの情報を使って確率的に再配分する）。
+
+---
+# I. index の構築
+
+## セル24: bowtie2 index
+
+統合FASTA（**2.76 GB**。マウス decoy を含む）に対して index を作る。
+**60〜120分かかる。**
+
+4 GB を超えるリファレンスでは bowtie2-build が自動で large index（`.bt2l`）に切り替える。
+
+最後に `bowtie2-inspect -n` で index 内の contig 数を数え、統合FASTA の74と一致するか
+確認する。途中で失敗した index が残っていると、ステージ3で原因の分かりにくい結果になる。
+
+```{r}
+#| vscode: {languageId: r}
+bt2 = REF_DIR/"bt2"/"oligo_eptA"
+bt2.parent.mkdir(parents=True, exist_ok=True)
+
+if Path(str(bt2) + ".1.bt2").exists() or Path(str(bt2) + ".1.bt2l").exists():
+    idx_files = sorted(bt2.parent.glob(f"{bt2.name}*.bt2*"))
+    print("既にあります:", bt2)
+    print(f"  {len(idx_files)} ファイル / 計 "
+          f"{sum(f.stat().st_size for f in idx_files)/1e9:.2f} GB")
+    print("  作り直すなら ref/bt2/ を削除してから再実行")
+elif not have("bowtie2-build"):
+    print("!! bowtie2-build がありません")
+else:
+    print(f"統合FASTA: {ref_fna.stat().st_size/1e9:.2f} GB "
+          f"（マウス decoy 2.7 GB を含む）")
+    print(f"bowtie2 index を構築中（{THREADS} スレッド。60〜120分かかる）...")
+    # ★ 4 GB を超えるリファレンスでは bowtie2-build が自動で large index (.bt2l) に切り替える
+    sh(f"{tool_path('bowtie2-build')} --threads {THREADS} {ref_fna} {bt2}",
+       log=LOG_DIR/"bt2build.log", timeout=36000)
+
+# ── 検算 ─────────────────────────────────────────────────────
+idx_files = sorted(bt2.parent.glob(f"{bt2.name}*.bt2*"))
+if idx_files:
+    show(pd.DataFrame([{"file": f.name, "GB": round(f.stat().st_size/1e9, 2)}
+                       for f in idx_files]),
+         f"bowtie2 index（{len(idx_files)} ファイル / "
+         f"計 {sum(f.stat().st_size for f in idx_files)/1e9:.2f} GB）")
+    # index 内の contig 数が統合FASTA と一致するか
+    out = sh(f"{tool_path('bowtie2-inspect')} -n {bt2}", quiet=True)
+    if out:
+        n_idx = len(out.strip().splitlines())
+        n_fa = sum(1 for _ in read_fasta(ref_fna))
+        print()
+        print(f"index 内の contig 数: {n_idx} / 統合FASTA: {n_fa}  "
+              f"{'一致' if n_idx == n_fa else '!! 不一致。作り直すこと'}")
+else:
+    print("!! index が作られていません。logs/bt2build.log を確認")
+```
+
+## セル25: salmon index（decoy-aware）
+
+CDS の配列を転写産物とし、**ゲノム全体（マウス decoy 含む）を decoy にする**。
+宿主RNAや非CDS領域のリードが CDS に吸い寄せられるのを防ぐ。
+
+近縁株（Bth 2株）があるため Salmon は必須（CLAUDE.md §7 ステージ3）。
+featureCounts の `--fraction -M` は曖昧リードを 1/NH で機械的に等分するだけだが、
+Salmon の EM は一意リードの情報を使って確率的に再配分する。
+
+### ★ 元の実装から直した3点
+
+**1. `gene_id` が複数区間に分かれる feature を連結する。**
+eptA の `_retained`（2区間）や prfB の programmed frameshift が該当する。
+元の実装は1区間ずつ別レコードにしていたため、**同じ名前の転写産物が2本でき、
+salmon index が重複エラーになる**。転写産物の向きに並べて連結し、1本にする。
+
+**2. `eptA_full`（`exclude_from_DE`）を転写産物に入れない。**
+`_retained` / `_deleted` と配列が重複し、EM の割り当てが不安定になるため。
+
+**3. メモリ対策。** 元の実装は統合FASTA 全体（2.76 GB）を辞書に読み込んでいた。
+CDS が載っているのは細菌4株 + pME008（計 23 MB）だけなので、そこだけ読む。
+
+### 所要時間とメモリ
+
+**30〜90分、メモリ 20〜40 GB。** `gentrome.fna`（転写産物 + ゲノム、約2.8 GB）は
+index 構築後は不要なので、容量が気になるなら削除してよい。
+
+```{r}
+#| vscode: {languageId: r}
+salmon_dir = REF_DIR/"salmon"
+cds_fa     = REF_DIR/"oligo_eptA_cds.fna"
+gentrome   = REF_DIR/"gentrome.fna"
+decoy_txt  = REF_DIR/"decoys.txt"
+
+if (salmon_dir/"info.json").exists():
+    print("既にあります:", salmon_dir)
+    print("  作り直すなら ref/salmon/ を削除してから再実行")
+elif not have("salmon"):
+    print("!! salmon がありません")
+else:
+    # ── 転写産物FASTA を作る ─────────────────────────────────
+    #   ★ メモリ対策: 統合FASTA 全体（2.76 GB）を読み込まず、
+    #     CDS が載っている contig（細菌4株 + pME008、計 23 MB）だけを読む。
+    #     マウス decoy には CDS が無いので読む必要がない
+    want_contigs = set(all_df.contig)
+    seqs = {n: s for n, s in read_fasta(ref_fna) if n in want_contigs}
+    print(f"配列を読み込み: {len(seqs)} contig "
+          f"（統合FASTA の {sum(1 for _ in read_fasta(ref_fna))} contig のうち、"
+          f"CDS が載っているものだけ）")
+
+    # ★ gene_id が複数の区間に分かれる feature がある
+    #   （eptA の _retained 2区間、prfB の programmed frameshift など）。
+    #   元の実装は1区間ずつ別レコードとして書いていたため、
+    #   同じ名前の転写産物が2本できて salmon index が重複エラーになる。
+    #   → 転写産物の向きに並べて連結し、1本にする
+    # ★ eptA_full（exclude_from_DE）は転写産物に入れない。
+    #   _retained / _deleted と配列が重複し、EM の割り当てが不安定になるため
+    tx = all_df[(all_df.biotype == "CDS") & (~all_df.exclude_from_DE)]
+    comp = str.maketrans("ACGTNacgtn", "TGCANtgcan")
+    recs, n_multi = [], 0
+    for (gid, strand), g_ in tx.groupby(["gene_id", "strand"], sort=False):
+        parts = []
+        # + 鎖は座標の小さい順、- 鎖は大きい順に連結する
+        for _, r in g_.sort_values("start", ascending=(strand == "+")).iterrows():
+            s = seqs.get(r.contig)
+            if not s:
+                continue
+            sub = s[r.start - 1:r.end]
+            if strand == "-":
+                sub = sub[::-1].translate(comp)
+            parts.append(sub)
+        if not parts:
+            continue
+        if len(parts) > 1:
+            n_multi += 1
+        recs.append((gid, "".join(parts)))
+
+    write_fasta(cds_fa, recs)
+    print(f"転写産物 {len(recs):,} 本 → {cds_fa}")
+    print(f"  うち複数区間を連結したもの: {n_multi} 本"
+          "（eptA の _retained 2区間、prfB の frameshift など）")
+    assert len(recs) == len({g for g, _ in recs}), "!! 転写産物名が重複しています"
+
+    # ── decoy（ゲノム全体。マウスも含む）───────────────────────
+    #   宿主RNA や非CDS領域のリードが CDS に吸い寄せられるのを防ぐ
+    decoy_txt.write_text("\n".join(n for n, _ in read_fasta(ref_fna)) + "\n")
+    print(f"decoy: {sum(1 for _ in open(decoy_txt)):,} contig")
+
+    # gentrome = 転写産物 + ゲノム（この順序でなければならない）
+    sh(f"cat {cds_fa} {ref_fna} > {gentrome}", quiet=True)
+    print(f"gentrome: {gentrome.stat().st_size/1e9:.2f} GB")
+
+    print(f"salmon index を構築中（{THREADS} スレッド。30〜90分、メモリ 20〜40 GB）...")
+    sh(f"{tool_path('salmon')} index -t {gentrome} -d {decoy_txt} -i {salmon_dir} "
+       f"-p {THREADS} -k 31", log=LOG_DIR/"salmon_index.log", timeout=36000)
+
+# ── 検算 ─────────────────────────────────────────────────────
+if (salmon_dir/"info.json").exists():
+    import json as _json
+    info = _json.loads((salmon_dir/"info.json").read_text())
+    show(pd.DataFrame([{"項目": k, "値": v} for k, v in info.items()
+                       if not isinstance(v, (list, dict))]), "salmon index の情報")
+    print()
+    print(f"index サイズ: "
+          f"{sum(f.stat().st_size for f in salmon_dir.rglob('*') if f.is_file())/1e9:.2f} GB")
+    # gentrome は大きいので消してよい（index ができれば不要）
+    if gentrome.exists():
+        print()
+        print(f"※ {gentrome.name}（{gentrome.stat().st_size/1e9:.2f} GB）は")
+        print("   index 構築後は不要。容量が気になるなら削除してよい")
+```
+
+### 考察（セル24・25 / index の構築）
+
+| 工程 | 時間 | 結果 |
+|---|---|---|
+| bowtie2-build | **15分** | 6ファイル / 3.80 GB。contig 74 で統合FASTA と一致 |
+| 転写産物FASTA | 1分 | **17,919 本**（複数区間を連結 3 本） |
+| gentrome | 数秒 | 2.82 GB |
+| salmon index | **9分** | 6.7 GB |
+
+複数区間を連結した3本は、eptA の `_retained` 2件（Bth_VPI・Bun_8492）と
+prfB の programmed frameshift 1件。**転写産物名の重複は発生しなかった**
+（元の実装のままなら salmon index が重複エラーで失敗していた箇所）。
+
+#### ★ salmon が 737 本の転写産物を除外した
+
+`logs/salmon_index.log`:
+
+```
+removed 737 transcripts that were exact sequence duplicates
+  (use --keepDuplicates to retain them)
+74 decoy reference(s) (first decoy index 17181);
+  1 short (sub-k, 0-count) transcript(s) recorded after the decoys
+```
+
+17,919 − 737（重複）− 1（短い）= **17,181**（= `first_decoy_index`）。
+
+**「短いから除外された」のではない。** 31 bp 未満の転写産物は
+`CE91St8_20540_retained`（15 bp）の**1本だけ**で、これは除外ではなく
+「sub-k, 0-count」として decoy の後に記録されている。
+
+#### 除外された737本の内訳（`ref/salmon/duplicate_clusters.tsv`）
+
+**配列が完全に同一**の転写産物のペア。
+
+| 残した側 | 重複側 | 件数 | 意味 |
+|---|---|---|---|
+| Bth_St8 | **Bth_VPI** | **463** | ★ 2株間でCDS配列が完全一致 |
+| Odo_St23 | Odo_St23 | 88 | 自株内のパラログ（転移因子など） |
+| Bth_St8 | Odo_St23 | 67 | ★ 科をまたぐ一致（可動性遺伝因子の共有） |
+| Bth_St8 | Bth_St8 | 47 | 自株内のパラログ |
+| Bth_VPI | Bth_VPI | 41 | 同上 |
+| Bun_8492 | Bun_8492 | 21 | 同上 |
+| Bth_VPI | Bun_8492 | 10 | 同属別種間の一致 |
+
+**Bth_VPI ↔ Bth_St8 の 463 件**は、ステージ1の mappability で「2,311 CDS が区別できない」
+と出たことの極端な部分にあたる。ANI 98% でも、**463 の CDS は塩基レベルで完全に同一**。
+
+**Bth_St8 ↔ Odo_St23 の 67 件**は科をまたぐ一致で、ステージ1で見つかった
+「Odo_St23 ↔ Bth_St8 が 73 CDS」と対応する。可動性遺伝因子（ICE・トランスポゾン）の
+共有によるものと考えられる。
+
+> **Salmon を使うときの注意。** 既定では重複した転写産物のうち1本だけが残り、
+> もう一方には**カウントが付かない**（`duplicate_clusters.tsv` に記録される）。
+> 株ごとの比較で「片方の株だけ発現0」という結果が出たら、まずこのファイルを確認すること。
+> featureCounts（`--fraction -M`）なら両方に 1/2 ずつ配分されるので挙動が違う。
+> **両者の相関を取って乖離を見る**という CLAUDE.md §7 ステージ3 の方針が、ここで効く。
+
+#### Bth_St8 の eptA 残存領域は Salmon では定量できない
+
+`CE91St8_20540_retained`（15 bp）は k-mer 長（31）未満なので、
+Salmon では常に 0 カウントになる。featureCounts なら15 bpでもカウントされるが、
+**その大半は直前の BamA 由来のリードがこの15 bpに重なったもの**（セル23 の注記）。
+
+→ **Bth_St8 は完全ノックアウトとして扱う**という方針が、ここでも裏付けられた。
+`_deleted`（1,689 bp）が K群でゼロになることを遺伝子型の確認に使う。
+
+---
+# J. mappability の実測
+
+**ゲート1の積み残し。** Bth_VPI ↔ Bth_St8 の共通領域（96.8%）が、
+実リード長 150 bp でどこまで株を区別できるかを測る。
+
+ステージ1の見立て: ANI 98% = 2%分岐なので、150 bp リードには平均約3塩基の差が入り、
+bowtie2 は区別できるはず。**固有領域の206 CDSに限定する前に、必ず実測する。**
+
+---
+# J. mappability の実測（本番リファレンスに対して）
+
+`2_reference_qc.ipynb` では**細菌4株のみ**のリファレンスで測った。
+ここでは **pME008 + マウス decoy を含む本番のリファレンス**で測り直す。
+ステージ3で実際に使うのはこちらなので、GTF に載せる値もこちらが正しい。
+
+## セル26: 擬似リードを作ってマップし戻す
+
+各 CDS を実リード長（150 bp）で10 bp刻みに刻み、本番の bowtie2 index に戻す。
+**MAPQ >= 10 を「株を特定できた」とみなす。**
+
+### ★ 元の実装から直した3点
+
+**1. `gene` 列に locus_tag だけを書く。**
+元の実装は `株ID~locus_tag` を書いていたため、**セル23 の merge（`strain` と `gene` で結合）と
+形式が合わなかった**。セル23 が mappability を属性に入れられるよう、形式を揃える。
+
+**2. メモリ対策。** 統合FASTA 全体（2.76 GB）ではなく、CDS が載っている contig
+（細菌4株 + pME008、23 MB）だけを読む。
+
+**3. `n_to_other_strain` 列を追加。** mappability が低い CDS について、
+「他の株と区別がつかない」のか「自株内で曖昧（パラログ・トランスポゾン）」なのかを
+切り分けるため。
+
+セル24（bowtie2 index）が終わっていないと実行できない。
+
+```{r}
+#| vscode: {languageId: r}
+# ── このセルで使う前段の変数（セル単体でも実行できるように用意する）──────
+#   セル17（ref_fna）・セル23（all_df）・セル24（bt2）を実行していなくても動く
+if "ref_fna" not in dir():
+    ref_fna = REF_DIR/"oligo_eptA.fna"
+if "bt2" not in dir():
+    bt2 = REF_DIR/"bt2"/"oligo_eptA"
+if "all_df" not in dir():
+    # セル23 が書いた GTF から復元する（必要な列だけ）
+    gtf_p = REF_DIR/"oligo_eptA.gtf"
+    if not gtf_p.exists():
+        raise SystemExit("!! ref/oligo_eptA.gtf がありません。セル23 を先に実行してください")
+    _rows = []
+    with open(gtf_p) as _f:
+        for _line in _f:
+            _p = _line.rstrip("\n").split("\t")
+            if len(_p) < 9:
+                continue
+            _a = dict(re.findall(r'(\w+) "([^"]*)"', _p[8]))
+            _rows.append({"strain": _a.get("strain", ""), "contig": _p[0],
+                          "biotype": _a.get("biotype", ""), "start": int(_p[3]),
+                          "end": int(_p[4]), "strand": _p[6],
+                          "gene_id": _a.get("gene_id", ""),
+                          "exclude_from_DE": _a.get("exclude_from_DE") == "True"})
+    all_df = pd.DataFrame(_rows)
+    print(f"（GTF から all_df を復元: {len(all_df):,} 行）")
+
+MAPQ_MIN = 10
+sim_fa   = MAP_DIR/"sim_reads.fa"
+mapq_tsv = MAP_DIR/"cds_mappability.tsv"
+
+if mapq_tsv.exists() and mapq_tsv.stat().st_size > 0:
+    print("既に結果があります:", mapq_tsv)
+    print("  作り直すなら削除してから再実行")
+elif not (Path(str(bt2)+".1.bt2").exists() or Path(str(bt2)+".1.bt2l").exists()):
+    print("!! bowtie2 index がありません。セル24 を先に実行してください")
+else:
+    # ★ メモリ対策: 統合FASTA 全体（2.76 GB）ではなく、
+    #   CDS が載っている contig（細菌4株 + pME008、23 MB）だけを読む
+    want_contigs = set(all_df.loc[all_df.biotype == "CDS", "contig"])
+    seqs = {n: s for n, s in read_fasta(ref_fna) if n in want_contigs}
+    print(f"配列を読み込み: {len(seqs)} contig")
+
+    n_read, n_cds = 0, 0
+    with open(sim_fa, "w") as out:
+        for _, r in all_df[all_df.biotype == "CDS"].iterrows():
+            s = seqs.get(r.contig)
+            if not s:
+                continue
+            sub = s[r.start-1:r.end]
+            n_cds += 1
+            for i in range(0, max(1, len(sub) - READLEN + 1), STEP):
+                out.write(f">{r.strain}~{r.gene_id}~{i}\n{sub[i:i+READLEN]}\n")
+                n_read += 1
+    print(f"擬似リード {n_read:,} 本（CDS {n_cds:,} 行、{READLEN} bp、{STEP} bp刻み）")
+    print(f"  {sim_fa}  ({sim_fa.stat().st_size/1e9:.2f} GB)")
+
+    tot, uniq_c, wrong = Counter(), Counter(), Counter()
+    conf, src_of = defaultdict(Counter), {}
+    cmd = (f"{tool_path('bowtie2')} -f -x {bt2} -U {sim_fa} -p {THREADS} --no-unal "
+           f"2> {LOG_DIR/'bt2_mappability.log'} | {tool_path('samtools')} view -")
+    print("bowtie2 で戻してマップ中（数分）...")
+    t0 = time.time()
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                            text=True, bufsize=1 << 20)
+    for line in proc.stdout:
+        p_ = line.split("\t", 6)
+        if len(p_) < 5:
+            continue
+        s_, gid, _ = p_[0].split("~", 2)      # 出身: 株ID, 遺伝子ID
+        dst = p_[2].split("~", 1)[0]          # 行き先の contig が属する区分
+        k = f"{s_}~{gid}"
+        src_of[k] = (s_, gid)
+        tot[k] += 1
+        if int(p_[4]) >= MAPQ_MIN:
+            uniq_c[k] += 1
+        elif dst != s_:
+            wrong[k] += 1
+            conf[k][dst] += 1
+    proc.wait()
+    print(f"  完了 {time.time()-t0:.0f}s (rc={proc.returncode})")
+
+    # ★ gene 列には locus_tag だけを書く。
+    #   元の実装は "株ID~locus_tag" を書いていたため、セル23 の
+    #   merge（strain と gene で結合）と形式が合わなかった
+    with open(mapq_tsv, "w") as out:
+        out.write("strain\tgene\tn_sim\tn_unique\tmappability\t"
+                  "n_to_other_strain\ttop_confused_with\n")
+        for k, t in tot.items():
+            s_, gid = src_of[k]
+            b = conf[k].most_common(1)
+            out.write(f"{s_}\t{gid}\t{t}\t{uniq_c[k]}\t{uniq_c[k]/t:.4f}\t"
+                      f"{wrong[k]}\t{b[0][0] if b else '-'}\n")
+    print(f"{len(tot):,} CDS → {mapq_tsv}")
+
+logf = LOG_DIR/"bt2_mappability.log"
+if logf.exists():
+    print()
+    print("bowtie2 のサマリー:")
+    for line in logf.read_text().strip().splitlines():
+        if "WARNING" not in line:
+            print("  " + line)
+```
+
+## セル27: 株ごとの mappability
+
+4段階（高 ≥0.9 / 可 0.5–0.9 / 困難 0.1–0.5 / 不能 <0.1）に分けて集計する。
+
+### ★ ステージ1（細菌4株のみ）との比較
+
+本番のリファレンスには **pME008 とマウス decoy** が入っている。
+decoy が擬似リードを吸収すると mappability は下がるので、その差を見る。
+
+**差がほぼ 0 なら、decoy は細菌CDSの判別に影響していない**ことの確認になる。
+逆に大きく下がる CDS があれば、その遺伝子はマウスゲノムと相同性があることになり、
+ステージ3で宿主RNAの混入を受けやすい遺伝子として注意が要る。
+
+最後に CLAUDE.md §3 の問い（Bth 2株で共通領域がどこまで使えるか）に答える。
+
+```{r}
+#| vscode: {languageId: r}
+mp = pd.read_csv(mapq_tsv, sep="\t")
+
+def cls(x):
+    return "高(>=0.9)" if x >= 0.9 else "可(0.5-0.9)" if x >= 0.5 else \
+           "困難(0.1-0.5)" if x >= 0.1 else "不能(<0.1)"
+
+s_ = (mp.groupby("strain")
+        .agg(CDS数=("gene", "size"), 平均=("mappability", "mean"),
+             中央値=("mappability", "median")).reset_index())
+for lab, f in [("高", lambda x: (x >= 0.9).sum()),
+               ("可", lambda x: ((x >= 0.5) & (x < 0.9)).sum()),
+               ("困難", lambda x: ((x >= 0.1) & (x < 0.5)).sum()),
+               ("不能", lambda x: (x < 0.1).sum())]:
+    s_[lab] = mp.groupby("strain").mappability.apply(f).values
+s_["使える(>=0.5)"] = s_["高"] + s_["可"]
+s_["使える_pct"] = (100 * s_["使える(>=0.5)"] / s_["CDS数"]).round(1)
+s_[["平均", "中央値"]] = s_[["平均", "中央値"]].round(3)
+show(s_, f"CDSごとの株判別可能性（リード長 {READLEN} bp、MAPQ >= {MAPQ_MIN}）")
+
+# ── ★ ステージ1（細菌4株のみ）との比較 ──────────────────────
+#   このnotebookの測定は pME008 + マウス decoy を含む本番のリファレンスに対するもの。
+#   decoy がリードを吸収して mappability が下がる可能性があるので、差を見る
+st1 = ROOT/"mappability"/"cds_mappability.tsv"
+if st1.exists() and st1 != mapq_tsv:
+    a = pd.read_csv(st1, sep="\t")[["strain", "gene", "mappability"]]
+    cmp_ = (mp[["strain", "gene", "mappability"]]
+            .merge(a, on=["strain", "gene"], how="inner",
+                   suffixes=("_本番", "_ステージ1")))
+    cmp_["差"] = cmp_["mappability_本番"] - cmp_["mappability_ステージ1"]
+    g_ = (cmp_.groupby("strain")
+             .agg(共通CDS=("差", "size"), 平均差=("差", "mean"),
+                  下がった=("差", lambda x: (x < -0.01).sum()),
+                  上がった=("差", lambda x: (x > 0.01).sum())).reset_index())
+    g_["平均差"] = g_["平均差"].round(4)
+    show(g_, "ステージ1（細菌4株のみ）との比較")
+    print()
+    print("※ 本番のリファレンスには pME008 とマウス decoy が入っている。")
+    print("   decoy が擬似リードを吸収すると mappability は下がる。")
+    print("   差がほぼ 0 なら、decoy は細菌CDSの判別に影響していない")
+
+print()
+print("mappability < 0.5 のCDSの混同相手:")
+bad = mp[(mp.mappability < 0.5) & (mp.top_confused_with != "-")]
+pair = (bad.groupby(["strain", "top_confused_with"]).size()
+           .reset_index(name="CDS数").sort_values("CDS数", ascending=False))
+pair["同種か"] = pair.apply(
+    lambda r: "同種" if str(r.strain)[:3] == str(r.top_confused_with)[:3]
+    else "★別の属/科", axis=1)
+show(pair)
+
+print()
+print("★ ゲート1の積み残しの答え（CLAUDE.md §3）:")
+for sid in ("Bth_VPI", "Bth_St8"):
+    v = mp.loc[mp.strain == sid, "mappability"]
+    if len(v):
+        print(f"   {sid}: 区別可能なCDS {int((v>=0.5).sum()):,} / {len(v):,} "
+              f"({100*(v>=0.5).mean():.1f}%)")
+print("   固有領域は 206 / 230 CDS。これを大きく上回れば共通領域の大半も使える")
+
+mp.to_csv(MAP_DIR/"cds_mappability_full.tsv", sep="\t", index=False)
+s_.to_csv(MAP_DIR/"mappability_summary_full.tsv", sep="\t", index=False)
+_ = archive_to_project(MAP_DIR, quiet=True)
+```
+
+### 考察（セル26・27 / 本番リファレンスでの mappability）
+
+#### 1. マウス decoy は細菌CDSの判別に影響していない
+
+| 株 | 共通CDS | 平均差 | 下がった | 上がった |
+|---|---|---|---|---|
+| Bth_St8 | 4,795 | **+0.0002** | 105 | 162 |
+| Bth_VPI | 4,801 | **+0.0002** | 114 | 172 |
+| Bun_8492 | 3,688 | 0.0000 | 1 | 1 |
+| Odo_St23 | 4,618 | 0.0000 | 1 | 2 |
+
+平均差は **0.0002（0.02%）で実質ゼロ**。リファレンスが 23 MB → 2.76 GB になり、
+マウスゲノム 2.7 Gb が加わっても、細菌CDSの株判別能力は変わっていない。
+
+**Bth 2株だけ 100〜170 CDS が微増・微減しているのは、生物学的な理由ではない。**
+bowtie2 は総当たりではなく**ヒューリスティック探索**をするため、index が変わると
+探索経路が変わり、見つかる「次善のアラインメント」がわずかに違う。
+MAPQ は最良と次善の差で決まるので、**閾値 10 の境界付近にある CDS で判定が揺れる**。
+下がった数より上がった数の方が多いこと自体に意味はない。
+
+Bun_8492 と Odo_St23 でほぼ変化がないのは、これらの分布が**二峰性の山から遠い**
+（0 か 1 にはっきり分かれている）ためで、境界付近の CDS が少ないことを示す。
+
+#### 2. マウスと混同される細菌CDSは1つもない
+
+混同相手の表に **`mouse` の行が1つもない**。つまり
+
+- **マウスゲノムに吸い寄せられた細菌CDSはゼロ**
+- 細菌CDSのうち宿主RNAと取り違えられる遺伝子は無い
+
+decoy を入れた目的は「宿主RNAが細菌遺伝子に誤マップするのを防ぐ」ことだが、
+**少なくとも細菌側から見れば、取られる遺伝子は無い**ことが確認できた。
+実データで宿主RNAがどれだけ decoy に吸収されるかは、ステージ3のマッピング率で分かる。
+
+#### 3. pME008 の 13 CDS はすべて mappability 1.000
+
+```
+pME008  13 CDS  平均 1.000  高 13  不能 0  使える 100.0%
+```
+
+**細菌4株の CDS でプラスミド遺伝子に似たものが1つもない**ということ。
+これは解釈上重要で、CLAUDE.md §2 の
+
+> pME008 にマップされたリードは Odoribacter のプラスミド発現として解釈する
+
+という前提が成立する。**Cas・Tns・tetX1 に当たったリードは、細菌染色体由来ではなく
+確実にプラスミド由来。**
+
+#### 4. CLAUDE.md §3 の問いへの答え（確定）
+
+```
+Bth_VPI: 区別可能なCDS 2,369 / 4,803 (49.3%)
+Bth_St8: 区別可能なCDS 2,337 / 4,797 (48.7%)
+固有領域は 206 / 230 CDS
+```
+
+ステージ1の値（2,367 / 2,335）とほぼ同じで、**本番リファレンスでも結論は変わらない**。
+固有領域だけに限定した場合の **10倍以上**の遺伝子が株レベル解析に使える。
+
+#### 5. 混同の構造も変わっていない
+
+| 混同 | CDS数 |
+|---|---|
+| Bth_St8 ↔ Bth_VPI | 2,312 / 2,311 |
+| Odo_St23 ↔ Bth_St8 | 73 / 71（**科をまたぐ**） |
+| Bun_8492 ↔ Bth_VPI | 28（同属別種） |
+
+Salmon の `duplicate_clusters.tsv`（Bth 間 463 件、St8 ↔ Odo 67 件）とも整合する。
+**独立な2つの手法（bowtie2 の MAPQ と Salmon の配列重複判定）で同じ構造が見えている。**
+
+---
+
+**→ GTF の `mappability` 属性は、この本番リファレンスで測った値に差し替える。
+セル23 を再実行し、セル28 で確認すること。**
+
+## セル28: mappability を GTF に反映する
+
+### ★ 元の実装の問題
+
+元の実装は GTF の各行の末尾に `mappability "..."` を**追記**していた。
+しかし**セル23 が既に `mappability` を属性に書いている**ので、このまま追記すると
+**同じ属性が2つある GTF** になる。パーサによってどちらを読むかが変わり、
+原因の分かりにくい不整合になる。
+
+### 対処
+
+**セル23 を再実行する。** セル23 は `MAP_DIR/cds_mappability.tsv`（§J の出力）が
+あればそれを優先して読むので、再実行するだけで本番リファレンスで測った値に入れ替わる。
+
+```
+セル23 の探索順:
+  1. MAP_DIR/cds_mappability.tsv          ← §J（本番リファレンス）★こちらを優先
+  2. ROOT/mappability/cds_mappability.tsv ← ステージ1（細菌4株のみ）
+```
+
+このセルは、**どちらの値が GTF に入っているかを確認するだけ**にする。
+
+```{r}
+#| vscode: {languageId: r}
+# ── GTF に入っている mappability がどちらの測定か確認する ─────
+#   ★ 値を追記しない。セル23 が既に属性として書いているので、
+#     ここで追記すると同じ属性が2つある GTF になってしまう。
+#     本番リファレンスの値に入れ替えたいときは「セル23 を再実行する」
+gtf_path = REF_DIR/"oligo_eptA.gtf"
+
+if not gtf_path.exists():
+    print("!! GTF がありません。セル23 を先に実行してください")
+else:
+    # GTF から gene_id → mappability を読み出す
+    in_gtf = {}
+    dup_attr = 0
+    with open(gtf_path) as f:
+        for line in f:
+            gid = re.search(r'gene_id "([^"]+)"', line)
+            mv = re.findall(r'mappability "([^"]*)"', line)
+            if gid and mv:
+                if len(mv) > 1:
+                    dup_attr += 1
+                in_gtf[gid.group(1)] = mv[-1]
+    print(f"GTF 内で mappability を持つ feature: {len(in_gtf):,}")
+    if dup_attr:
+        print(f"!! mappability 属性が2つある行: {dup_attr:,}")
+        print("   → セル23 を再実行して書き直すこと")
+
+    # §J の値・ステージ1の値と突き合わせて、どちらが入っているかを判定する
+    srcs = {"§J（本番リファレンス）": MAP_DIR/"cds_mappability.tsv",
+            "ステージ1（細菌4株のみ）": ROOT/"mappability"/"cds_mappability.tsv"}
+    rows = []
+    for lab, pth in srcs.items():
+        if not pth.exists():
+            rows.append({"測定": lab, "ファイル": "なし", "一致": "-"}); continue
+        t = pd.read_csv(pth, sep="\t")
+        d = dict(zip(t.gene.astype(str), t.mappability.round(4).astype(str)))
+        common = [g_ for g_ in in_gtf if g_ in d]
+        same = sum(1 for g_ in common
+                   if abs(float(in_gtf[g_]) - float(d[g_])) < 1e-3)
+        rows.append({"測定": lab, "ファイル": pth.name,
+                     "照合できたCDS": len(common),
+                     "一致": f"{same:,} / {len(common):,}"
+                             + (f"（{100*same/len(common):.0f}%）" if common else "")})
+    show(pd.DataFrame(rows), "GTF に入っている mappability はどちらの測定か")
+    print()
+    print("※ §J 側が 100% 一致していれば、本番リファレンスで測った値が入っている。")
+    print("   ステージ1 側が一致している場合は、セル23 を再実行して入れ替えること")
+```
+
+---
+# K. 成果物の確認
+
+---
+## セル29: できたものを一覧する
+
+ステージ2 の成果物が揃っているかを確認し、GTF の中身を要約する。
+**このセルは単体で実行できる**（パスはすべて既定値を持つ）。
+
+最後にステージ3 で使うコマンドの引数を表示する。
+
+```{r}
+#| vscode: {languageId: r}
+# ── このセルで使うパス（セル単体でも実行できるように既定値を持つ）──────
+ref_fna_    = ref_fna    if "ref_fna"    in dir() else REF_DIR/"oligo_eptA.fna"
+gtf_path_   = gtf_path   if "gtf_path"   in dir() else REF_DIR/"oligo_eptA.gtf"
+bt2_        = bt2        if "bt2"        in dir() else REF_DIR/"bt2"/"oligo_eptA"
+salmon_dir_ = salmon_dir if "salmon_dir" in dir() else REF_DIR/"salmon"
+spec_       = spec       if "spec"       in dir() else QC_DIR/"eptA_mutation_spec.tsv"
+mapq_tsv_   = mapq_tsv   if "mapq_tsv"   in dir() else MAP_DIR/"cds_mappability.tsv"
+cm_out_     = cm_out     if "cm_out"     in dir() else QC_DIR/"checkm2"
+
+want = [
+    ("統合FASTA",      ref_fna_,                        "ステージ3のマッピング先"),
+    ("統合GTF",        gtf_path_,                       "featureCounts の -a に渡す"),
+    ("転写産物FASTA",  REF_DIR/"oligo_eptA_cds.fna",    "Salmon の入力（参考）"),
+    ("bowtie2 index",  Path(str(bt2_) + ".1.bt2"),      "ステージ3の -x に渡す"),
+    ("salmon index",   salmon_dir_/"info.json",         "Salmon の -i に渡す"),
+    ("decoys.txt",     REF_DIR/"decoys.txt",            "salmon index 構築に使用済み"),
+    ("pME008 spacer",  REF_DIR/"pME008_spacer.tsv",     "ステージ4の群判別に使う"),
+    ("eptA spec",      spec_,                           "eptA 変異の座標"),
+    ("mappability",    mapq_tsv_,                       "株レベル解析の可否判定"),
+    ("CheckM2",        cm_out_/"quality_report.tsv",    "ゲノム品質"),
+    ("eggNOG",         EMAP_DIR/"all4.emapper.annotations", "KO/COG/CAZy"),
+]
+
+rows = []
+for nm, p_, use in want:
+    p_ = Path(p_)
+    ok = p_.exists()
+    rows.append({"成果物": nm, "状態": "OK" if ok else "!! 無い",
+                 "MB": round(p_.stat().st_size/1e6, 1) if ok else None,
+                 "用途": use, "パス": str(p_)})
+df_out = pd.DataFrame(rows)
+show(df_out[["成果物", "状態", "MB", "用途"]], "ステージ2 の成果物")
+ng = df_out.loc[df_out.状態 != "OK", "成果物"].tolist()
+print()
+print("!! 足りないもの: " + ", ".join(ng) if ng else "すべて揃っています")
+
+# index はディレクトリ単位でサイズを出す
+print()
+for nm, d_ in (("bowtie2 index", Path(bt2_).parent), ("salmon index", Path(salmon_dir_))):
+    if d_.exists():
+        sz = sum(f.stat().st_size for f in d_.rglob("*") if f.is_file())
+        print(f"  {nm:<16}{sz/1e9:>6.2f} GB  ({d_})")
+
+# ── GTF の中身 ───────────────────────────────────────────────
+if Path(gtf_path_).exists():
+    bt_, excl, with_map = Counter(), 0, 0
+    for l in open(gtf_path_):
+        m = re.search(r'biotype "([^"]*)"', l)
+        if m:
+            bt_[m.group(1)] += 1
+        if 'exclude_from_DE "True"' in l:
+            excl += 1
+        mm = re.search(r'mappability "([^"]*)"', l)
+        if mm and mm.group(1) not in ("NA", ""):
+            with_map += 1
+    print()
+    show(pd.DataFrame([{"biotype": k, "行数": v} for k, v in bt_.most_common()]),
+         "GTF の biotype 別の行数")
+    print(f"exclude_from_DE = True : {excl}（eptA_full）")
+    print(f"mappability あり        : {with_map:,}")
+    print(f"→ DE の対象            : {bt_['CDS'] - excl:,}")
+
+    print()
+    print("eptA 関連の行:")
+    for l in open(gtf_path_):
+        if 'gene_name "eptA_' in l:
+            p_ = l.split("\t")
+            g = re.search(r'gene_id "([^"]+)"', l)
+            mm = re.search(r'mappability "([^"]*)"', l)
+            print(f"  {g.group(1):<30}{p_[0]:<26}{int(p_[3]):>10,}-{int(p_[4]):<10,}"
+                  f"  {p_[6]}  map={mm.group(1) if mm else '-'}")
+
+    print()
+    print("pME008 の CAST_spacer:")
+    for l in open(gtf_path_):
+        if "CAST_spacer" in l:
+            p_ = l.split("\t")
+            print(f"  {p_[0]}  {int(p_[3]):,}-{int(p_[4]):,}  ({int(p_[4])-int(p_[3])+1} bp)")
+
+print()
+print("=" * 72)
+print("ステージ2 完了。次はステージ3（サンプル処理）")
+print("=" * 72)
+print("  featureCounts: -t transcript -g gene_id -s 2 -p --countReadPairs -B --fraction -M")
+print("  bowtie2      : -x", bt2_)
+print("  salmon       : -i", salmon_dir_)
+```
+
+## 次: ステージ3（サンプル処理）
+
+ゲートではないので、確認できたらそのまま進んでよい。
+
+```
+FastQC/MultiQC
+  → fastp（アダプター明示: P7 AGATCGGAAGAGCACACGTCTGAACTCCAGTCA /
+                            P5 AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT）
+  → Bowtie2 → samtools sort/index
+  → featureCounts -s 2 -p --countReadPairs -B --fraction -M
+  → Salmon（並走）
+```
+
+**`-s 2` を忘れないこと。** 同系統の過去データで rev/fwd = 20〜55:1 を実測済み。
+
+その次のステージ4がゲート2（定着判定と遺伝子型確認）。

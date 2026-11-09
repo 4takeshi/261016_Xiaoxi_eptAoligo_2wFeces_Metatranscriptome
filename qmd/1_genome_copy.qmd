@@ -1,0 +1,584 @@
+---
+title: '261016 Xiaoxi eptA oligo (5株) — ステージ0: ゲノムの収集'
+jupyter:
+  jupytext:
+    text_representation:
+      extension: .qmd
+      format_name: quarto
+      format_version: '1.0'
+      jupytext_version: 1.19.5
+  kernelspec:
+    display_name: Python (miniforge3 base)
+    language: python
+    name: miniforge3-base
+---
+
+
+oligo 5株の metatranscriptome 解析のため、リファレンスになるゲノムを1か所に集める。
+
+| 株ID | 株 | 近縁関係 |
+|---|---|---|
+| `Bth_VPI` | *B. thetaiotaomicron* VPI-5482 | Bth_St8 と同種 |
+| `Bth_St8` | *B. thetaiotaomicron* CE91-St8 | Bth_VPI と同種 |
+| `Bun_8492` | *B. uniformis* ATCC 8492 | 別種 |
+| `Odo_St23` | *Odoribacteraceae* CE91-St23 | Odo_St24 とほぼ同一ゲノム |
+| `Odo_St24` | *Odoribacteraceae* CE91-St24 | Odo_St23 とほぼ同一ゲノム |
+
+このnotebookの目的は、5株の `genomic.fna` を `株ID.fna` という名前で
+1つのフォルダに揃えること。以降の解析（ANI、mappability、統合リファレンス）は
+**ファイル名が株IDになっている**ことを前提にする。
+
+**先に調査した結果**: 5株すべてサーバ上に存在するため、NCBIからのダウンロードは不要。
+
+
+## セル1: ライブラリ読み込みと出力先の設定
+
+```{python}
+# ── ライブラリ ───────────────────────────────────────────────
+import os, glob, gzip, shutil, subprocess
+from pathlib import Path
+import pandas as pd
+
+# ── パス設定 ─────────────────────────────────────────────────
+# ゲノムを集める先。260818_... と同じ genome/ 配下に新しく作る
+GENOME_ROOT = Path("/mnt/scratch/tanoue/genome/261016_Xiaoxi_eptAoligo_5strains")
+
+# 解析プロジェクト本体（このnotebookとCLAUDE.mdが置かれている場所。notebook・小さい表のみ）
+PROJECT = Path("/home/tanoue/261016_Xiaoxi_eptAoligo_2wFeces_Metatranscriptome")
+
+# 中間ファイル置き場（index・BAM・カウント等。容量が大きいので scratch に置く）
+SCRATCH = Path("/mnt/scratch/tanoue/261016_Xiaoxi_eptAoligo_2wFeces_Metatranscriptome")
+
+# ステージ1以降で使う「株ID.fna だけが入ったフォルダ」
+#   ここに集めたファイル名がそのまま株ID = contig名の接頭辞になる
+FNA_DIR = GENOME_ROOT / "fna"
+
+# 既存ゲノムの参照元（調査済み）
+#   scratch 側（260818_... 等）にも同一アセンブリがあるが、意図せぬ変更の可能性を
+#   排除するため使わない。コピー元は /db に統一する（セル3のmarkdown参照）
+DB_LAB     = Path("/db/lab_genomes")
+DB_REFSEQ  = Path("/db/refseq/250328_ncbi_genome")
+
+# ── フォルダ作成（既にあれば何もしない）────────────────────────
+for d in (GENOME_ROOT, FNA_DIR, SCRATCH):
+    d.mkdir(parents=True, exist_ok=True)
+
+# ── 確認 ─────────────────────────────────────────────────────
+print("PROJECT     :", PROJECT,     "  存在:", PROJECT.exists())
+print("SCRATCH     :", SCRATCH,     "  存在:", SCRATCH.exists())
+print("GENOME_ROOT :", GENOME_ROOT, "  存在:", GENOME_ROOT.exists())
+print("FNA_DIR     :", FNA_DIR,     "  存在:", FNA_DIR.exists())
+print("DB_LAB      :", DB_LAB,      "  存在:", DB_LAB.exists())
+print("DB_REFSEQ   :", DB_REFSEQ,   "  存在:", DB_REFSEQ.exists())
+print()
+print("pandas", pd.__version__)
+print("空き容量:")
+print(subprocess.run(["df", "-h", str(GENOME_ROOT)], capture_output=True, text=True).stdout)
+```
+
+## セル2: `/db` と `/mnt/scratch` を横断して5株の在処を検索
+
+260825_Cspo の `1_genome_copy.ipynb` の検索セルを流用する。フォルダ名と
+`*_assembly_report.txt` の中身の両方で株名を照合し、該当フォルダを列挙する。
+
+**元コードから変えた点は `#` で `[変更n]` と書いてある。** 要点のみ:
+
+| 変更 | 理由 |
+|---|---|
+| 1. キーワードを株IDごとの辞書に | 5株同時なので、どのヒットがどの株か分からないと使えない |
+| 2. taxid の数値をキーワードにしない | 報告書本文（配列長の表）まで読むので `818` 等は誤ヒットする |
+| 3. 探索先を `/db` + `/mnt/scratch/tanoue/genome` の2か所に | 5株中3株は `/db` に無く scratch 側にある |
+| 4. `search_dir` が株IDも返すように | 同上 |
+| 5. `parts[:5]` の丸めを「親パスを落とす」方式に | 5階層固定の丸めは scratch 側では base に潰れてしまう |
+| 6. 空白キーワードの正規表現を修正 | **元コードのバグ。** `atcc 8492` のように空白を含むと一致しない（下記） |
+
+変更6について: 元は `re.sub(r"\s+", r"\\s+", re.escape(k))` としていたが、
+`re.escape` が空白を `\ `（バックスラッシュ+空白）に変換するため、そのあと空白だけを
+`\s+` に置換するとバックスラッシュが取り残され、`atcc\\s+8492`（文字としての
+バックスラッシュ + `s+`）という別物になって一致しない。Cspo のキーワード（`dsm_1446` 等）
+には空白が無かったため表面化していなかった。
+
+実行時間は約20秒（48,286 フォルダ）。`/db/.Trash-*` で「アクセス拒否」が出るが無害。
+
+```{python}
+# ── このセルで使うライブラリ（セル単体でも動くように、ここで import する）──────
+import os, re
+import pandas as pd
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# ── 検索キーワード（株ごとに分けて持つ）─────────────────────────
+#   [変更1] 元コードは keywords を1本のリストにしていたが、今回は5株を同時に探すため
+#           「どのヒットがどの株か」が分からないと使えない。株IDごとの辞書にした。
+#   [変更2] 元コードは taxid の数値 "1509" もキーワードに入れていたが、今回は使わない。
+#           assembly_report.txt は本文（配列長の表）まで読むので、"818" のような
+#           短い数値は配列長に偶然一致して誤ヒットする。株名の文字列だけにする。
+STRAIN_KEYWORDS = {
+    "Bth_VPI":  ["vpi-5482", "vpi_5482"],
+    "Bth_St8":  ["ce91-st8", "ce91_08"],
+    "Bun_8492": ["atcc_8492", "atcc 8492"],   # フォルダ名は _ 、報告書は空白
+    "Odo_St23": ["ce91-st23", "ce91_23"],
+    "Odo_St24": ["ce91-st24", "ce91_24"],
+}
+
+# 株ID -> コンパイル済みパターン
+#   [変更6] 元コードは re.sub(r"\s+", r"\\s+", re.escape(k)) で空白の揺れを吸収していたが、
+#           これは空白を含むキーワードで壊れる。re.escape は空白を "\ "（バックスラッシュ+空白）
+#           に変換するため、そのあと空白だけを \s+ に置換するとバックスラッシュが取り残され、
+#           "atcc\\s+8492"（= 文字としてのバックスラッシュ + s+）という別物になって一致しない。
+#           Cspoのキーワード（dsm_1446 等）には空白が無かったので表面化しなかった。
+#           単語ごとに escape して \s+ で連結する形に変える。意図は元のまま。
+STRAIN_PATTERNS = {
+    sid: [re.compile(r"\s+".join(re.escape(t) for t in k.lower().split())) for k in kws]
+    for sid, kws in STRAIN_KEYWORDS.items()
+}
+
+# [変更3] 元コードは base_dir = "/db" の1か所だけだったが、今回は5株のうち3株が
+#         /mnt/scratch 側（260818フォルダ）にあるため、/db だけでは見つからない。
+BASE_DIRS = ["/db", "/mnt/scratch/tanoue/genome"]
+MAX_DEPTH = 4   # assembly_report がある階層に合わせる（元コードと同じ）
+
+
+def search_dir(dir_path, dirname):
+    """このフォルダがどの株に該当するかを調べ、該当した株IDの集合を返す。
+    [変更4] 元コードは dir_path だけを返していたが、どの株のヒットか分からなくなるため
+            株IDも一緒に返す。判定ロジック自体は元コードのまま。"""
+    hits = set()
+    low = dirname.lower()
+    # まずフォルダ名で判定（元コードと同じ）
+    for sid, pats in STRAIN_PATTERNS.items():
+        if any(p.search(low) for p in pats):
+            hits.add(sid)
+    try:
+        with os.scandir(dir_path) as it:
+            for entry in it:
+                if entry.is_file() and entry.name.endswith("_assembly_report.txt"):
+                    try:
+                        with open(entry.path, "r", encoding="utf-8", errors="ignore") as f:
+                            content = f.read().lower()
+                        # 次に報告書の中身で判定（元コードと同じ）
+                        for sid, pats in STRAIN_PATTERNS.items():
+                            if any(p.search(content) for p in pats):
+                                hits.add(sid)
+                    except Exception as e:
+                        print(f"ファイル読み込みエラー: {entry.name} - {e}")
+    except PermissionError as e:
+        print(f"アクセス拒否: {dir_path} - {e}")
+    return (dir_path, hits) if hits else None
+
+
+# 探索対象ディレクトリを深さ制限しつつ収集（os.walkの重複listdirを回避。元コードと同じ）
+target_dirs = []
+for base_dir in BASE_DIRS:
+    for root, dirs, files in os.walk(base_dir):
+        depth = root[len(base_dir):].count(os.sep)
+        if depth >= MAX_DEPTH:
+            dirs[:] = []          # これ以上潜らない
+            continue
+        for d in dirs:
+            target_dirs.append((os.path.join(root, d), d))
+print(f"探索対象: {len(target_dirs):,} フォルダ")
+
+matched = []
+with ThreadPoolExecutor(max_workers=32) as executor:   # I/Oバウンドなのでスレッドで十分
+    futures = {executor.submit(search_dir, dp, dn): dp for dp, dn in target_dirs}
+    for future in as_completed(futures):
+        result = future.result()
+        if result:
+            dir_path, hits = result
+            for sid in hits:
+                matched.append({"株ID": sid, "dir": os.path.normpath(dir_path)})
+
+# [変更5] 元コードは os.sep.join(parts[:5]) で「5階層まで」に丸めて重複をまとめていた。
+#         これは /db/refseq/.../株名 がちょうど5階層だから成立していた丸め方で、
+#         /mnt/scratch/tanoue/genome/... に適用すると base ディレクトリ自体に潰れてしまう。
+#         代わりに「同じ株で、別のヒットの親になっているパスを落とす」方式にする。
+#         結果として assembly_report が実際に入っているフォルダ（accession階層）が残る。
+rows = []
+for sid in STRAIN_KEYWORDS:
+    dirs = sorted({m["dir"] for m in matched if m["株ID"] == sid})
+    for d in dirs:
+        # 他のヒットの親（前方一致する、より深いパスがある）なら表示しない
+        if any(o != d and o.startswith(d + os.sep) for o in dirs):
+            continue
+        rows.append({"株ID": sid, "Matched Directory": d})
+
+df_search = pd.DataFrame(rows)
+pd.set_option("display.max_colwidth", None)
+pd.set_option("display.max_rows", None)
+df_search
+```
+
+## セル3: 5株の参照元を定義して、実体があるか確認
+
+株IDと「コピー元の `genomic.fna.gz`」の対応を1か所にまとめる。**この表が以降すべての起点**になる。
+
+**コピー元は5株すべて `/db` に統一する。** `/mnt/scratch/tanoue/genome/260818_...` にも
+3株（Bth_VPI / Bth_St8 / Odo_St23）の同一アセンブリがあり、そちらは解凍済みで扱いは楽だが、
+過去の作業で意図せず変更されている可能性が排除できないため採らない。`/db` は共有の
+参照用ディレクトリで、NCBI から取得した状態のまま置かれている（`lab_genomes` 配下は
+ファイル自体が読み取り専用）。セル2の検索結果のとおり、accession は scratch 側と同一。
+
+| 株ID | accession | コピー元 |
+|---|---|---|
+| Bth_VPI | GCF_000011065.1 | `/db/refseq/250328_ncbi_genome/` |
+| Bth_St8 | GCA_022835035.1 | `/db/lab_genomes/05_CE91-68st/` |
+| Bun_8492 | GCF_000154205.1 | `/db/refseq/250328_ncbi_genome/` |
+| Odo_St23 | GCA_022835375.1 | `/db/lab_genomes/05_CE91-68st/` |
+| Odo_St24 | GCA_022835415.1 | `/db/lab_genomes/05_CE91-68st/` |
+
+*B. uniformis* は候補が3つあったが、**ATCC 8492 の type material 由来である
+GCF_000154205.1 を採用**（他の2つ GCF_900624705.1 / GCF_900896415.1 は組織名が同じだが
+アセンブリ名が 81A2 / 82G1 で別分離株）。
+
+5株すべて `.fna.gz` なので、セル4では一律に解凍しながらコピーする。
+ここではコピーせず、ファイルが実在するかの確認だけを行う。
+
+```{python}
+
+# ── 5株の定義 ────────────────────────────────────────────────
+#   key   = 株ID。この文字列が fna のファイル名 → contig名の接頭辞 → 解析表の株列になる
+#   src   = コピー元の genomic.fna.gz
+#   label = 図表に書く正式な株名
+#
+#   コピー元は5株すべて /db に統一する（scratch 側の同一アセンブリは使わない。
+#   過去の作業で意図せず変更されている可能性を排除するため。上のmarkdown参照）
+CE91 = DB_LAB / "05_CE91-68st"          # 書くのが長いので短縮
+
+STRAINS = {
+    "Bth_VPI": {
+        "label": "Bacteroides thetaiotaomicron VPI-5482",
+        "src": DB_REFSEQ / "Bacteroides_thetaiotaomicron_VPI-5482"
+                         / "GCF_000011065.1_ASM1106v1"
+                         / "GCF_000011065.1_ASM1106v1_genomic.fna.gz",
+    },
+    "Bth_St8": {
+        "label": "Bacteroides thetaiotaomicron CE91-St8",
+        "src": CE91 / "CE91_08_Bacteroides_thetaiotaomicron"
+                    / "GCA_022835035.1_ASM2283503v1"
+                    / "GCA_022835035.1_ASM2283503v1_genomic.fna.gz",
+    },
+    "Bun_8492": {
+        # 候補3つのうち type material 由来のものを採用（上のmarkdown参照）
+        "label": "Bacteroides uniformis ATCC 8492",
+        "src": DB_REFSEQ / "Bacteroides_uniformis_ATCC_8492"
+                         / "GCF_000154205.1_ASM15420v1"
+                         / "GCF_000154205.1_ASM15420v1_genomic.fna.gz",
+    },
+    "Odo_St23": {
+        "label": "Odoribacteraceae bacterium CE91-St23",
+        "src": CE91 / "CE91_23_Odoribacteraceae_bacterium"
+                    / "GCA_022835375.1_ASM2283537v1"
+                    / "GCA_022835375.1_ASM2283537v1_genomic.fna.gz",
+    },
+    "Odo_St24": {
+        "label": "Odoribacteraceae bacterium CE91-St24",
+        "src": CE91 / "CE91_24_Odoribacteraceae_bacterium"
+                    / "GCA_022835415.1_ASM2283541v1"
+                    / "GCA_022835415.1_ASM2283541v1_genomic.fna.gz",
+    },
+}
+
+# ── 存在確認と、assembly_report から要点を拾う ──────────────────
+rows = []
+for sid, d in STRAINS.items():
+    src = d["src"]
+    # 同じフォルダにある *_assembly_report.txt を探して、必要な行だけ抜く
+    rep = next(iter(sorted(src.parent.glob("*_assembly_report.txt"))), None)
+    info = {}
+    if rep:
+        for line in rep.read_text(errors="ignore").splitlines():
+            if not line.startswith("#"):
+                break                                    # ヘッダ部分だけ読む
+            for key in ("Assembly level", "Infraspecific name", "Taxid",
+                        "Relation to type material"):
+                if line.startswith(f"# {key}:"):
+                    info[key] = line.split(":", 1)[1].strip()
+    rows.append({
+        "株ID": sid,
+        "存在": "OK" if src.exists() else "!! 無い",
+        "MB": round(src.stat().st_size / 1e6, 1) if src.exists() else None,
+        "accession": src.parent.name.split("_")[0] + "_" + src.parent.name.split("_")[1],
+        "level": info.get("Assembly level", "-"),
+        "strain": info.get("Infraspecific name", "-"),
+        "taxid": info.get("Taxid", "-"),
+        "type材料": "yes" if info.get("Relation to type material") else "",
+        "コピー元": "refseq" if "refseq" in str(src) else "lab_genomes",
+    })
+
+df_src = pd.DataFrame(rows)
+pd.set_option("display.width", 180)
+pd.set_option("display.max_colwidth", None)
+print(df_src.to_string(index=False))
+print()
+missing = df_src.loc[df_src["存在"] != "OK", "株ID"].tolist()
+print("!! 見つからない株: " + ", ".join(missing) if missing else "5株すべて参照元を確認できました（すべて /db、すべて .fna.gz）")
+```
+
+## セル4: md5を検証してから `株ID.fna` に解凍コピーし、読み取り専用に固定
+
+`/db` の `.fna.gz` を `fna/株ID.fna` に展開する。**中身は一切変えない**
+（contig名の改名は、統合リファレンスを作るステージ2で行う）。
+
+安定性のために3つを入れている。
+
+1. **md5検証** — コピー前にコピー元の md5 を確認する。期待値は NCBI FTP の
+   `md5checksums.txt` から取った値をこのセルに固定で置いてある（2026-10-16 取得、
+   `/db` の5ファイルすべてが一致することを確認済み）。`/db/lab_genomes` 配下には
+   `md5checksums.txt` が同梱されているが `/db/refseq` 配下の2株には無いため、
+   5株分をまとめてここに持つ。**これにより検証はネットワーク不要で再現できる。**
+   不一致なら、その株はコピーせずに警告を出す（黙って進むと以降すべてが汚染される）。
+2. **`chmod 444`** — 出力を読み取り専用にして、後のステージで誤って上書きするのを防ぐ。
+   再実行時は書き込み権限を戻してから消すので、何度流しても問題ない。
+3. **`provenance.tsv`** — どの `.fna` がどの accession 由来かを TSV に残す。
+   出来上がった `.fna` 自体の md5 も記録するので、後から改変の有無を確認できる。
+
+出力の確認ポイント: **Bth_VPI の contig数が 2 であること**（染色体 + プラスミド p5482）。
+CLAUDE.md で「プラスミドを忘れず含める」とされている箇所。
+
+```{python}
+# ── このセルで使うライブラリ（セル単体でも動くように、ここで import する）──────
+import gzip, hashlib, shutil, stat, os
+from pathlib import Path
+import pandas as pd
+
+# ── コピー元 .fna.gz の期待 md5 ───────────────────────────────
+#   出所: NCBI FTP の各 accession の md5checksums.txt
+#         https://ftp.ncbi.nlm.nih.gov/genomes/all/<GCF|GCA>/.../<accession>_<asm>/md5checksums.txt
+#   2026-10-16 に取得し、/db の5ファイルすべてが一致することを確認済み。
+#   ここに値を固定で置くことで、以降の検証はネットワーク不要で再現できる。
+#   （/db/lab_genomes 配下には md5checksums.txt が同梱されているが、
+#     /db/refseq 配下の2株には無いため、5株分をここにまとめる）
+EXPECTED_MD5 = {
+    "Bth_VPI":  "052fb0317fac44eb1817c3eac7e73ae2",
+    "Bth_St8":  "8d8cfcd5920001cc2f798b5eb20dab1c",
+    "Bun_8492": "8c6cd9c2b20b8faa70ad0add247d8b46",
+    "Odo_St23": "6ffc8d7b0a720f3dab27dc1c78e26dac",
+    "Odo_St24": "d91c29ac8dcda50a7c587f5d5b7aa897",
+}
+
+
+def md5_of(path, chunk=1 << 20):
+    """ファイルの md5 を返す。1MBずつ読むので大きなファイルでもメモリを食わない。"""
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(chunk), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+# ── 1株ずつ: md5検証 → 解凍コピー → 読み取り専用に固定 ──────────
+rows = []
+for sid, d in STRAINS.items():
+    src = d["src"]
+    dst = FNA_DIR / f"{sid}.fna"          # 出力はこの名前に統一（株ID = ファイル名）
+
+    # (1) コピー元の md5 を検証。ここが不一致なら /db のファイルが壊れている
+    got = md5_of(src)
+    ok = (got == EXPECTED_MD5[sid])
+
+    if not ok:
+        # 不一致なら絶対にコピーしない。黙って進むと以降すべてが汚染される
+        rows.append({"株ID": sid, "md5検証": "!! 不一致", "contig数": None,
+                     "全長_Mb": None, "出力": "作成せず"})
+        print(f"!! {sid}: md5 不一致  期待={EXPECTED_MD5[sid]}  実際={got}")
+        continue
+
+    # (2) 既存の出力があれば消す。前回 chmod 444 にしているので書き込み権限を戻してから
+    if dst.exists():
+        dst.chmod(0o644)
+        dst.unlink()
+
+    # (3) .gz を解凍しながらコピー（中身は一切変えない。contig名の改名は後のステージで行う）
+    with gzip.open(src, "rb") as fi, open(dst, "wb") as fo:
+        shutil.copyfileobj(fi, fo, length=1 << 20)
+
+    # (4) 読み取り専用にする。以降のステージで誤って上書きするのを防ぐ
+    dst.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)   # 444
+
+    # (5) 出来上がった .fna の中身を数える（contig数と全長。表示と記録用）
+    ncontig, total = 0, 0
+    with open(dst) as f:
+        for line in f:
+            if line.startswith(">"):
+                ncontig += 1
+            else:
+                total += len(line.strip())
+
+    rows.append({"株ID": sid, "md5検証": "OK", "contig数": ncontig,
+                 "全長_Mb": round(total / 1e6, 3), "出力": dst.name,
+                 "fna_md5": md5_of(dst)})
+
+df_copy = pd.DataFrame(rows)
+pd.set_option("display.width", 180)
+print(df_copy.to_string(index=False))
+print()
+
+# ── 来歴を TSV に残す（どの .fna がどの accession 由来かを後から辿れるように）──
+prov = pd.DataFrame([{
+    "strain_id": sid,
+    "label": d["label"],
+    "src_path": str(d["src"]),
+    "src_md5_expected": EXPECTED_MD5[sid],
+    "fna": str(FNA_DIR / f"{sid}.fna"),
+} for sid, d in STRAINS.items()]).merge(
+    df_copy[["株ID", "md5検証", "contig数", "全長_Mb"] +
+            (["fna_md5"] if "fna_md5" in df_copy else [])],
+    left_on="strain_id", right_on="株ID", how="left").drop(columns=["株ID"])
+prov_path = GENOME_ROOT / "provenance.tsv"
+prov.to_csv(prov_path, sep="\t", index=False)
+print("来歴を保存:", prov_path)
+print()
+
+ng = df_copy.loc[df_copy["md5検証"] != "OK", "株ID"].tolist()
+if ng:
+    print("!! md5 不一致の株があります:", ", ".join(ng), "— 先に進まないこと")
+else:
+    print("5株すべて md5 一致を確認して解凍コピーしました（出力は 444 で読み取り専用）")
+```
+
+---
+## セル5: Bun_8492 を complete genome に差し替える（2026-10-20 追加）
+
+当初は `/db` にあった **GCF_000154205.1（Scaffold、33配列）** を使っていたが、
+**同じ ATCC 8492 株の complete genome が 2022 年に公開されていた**ことが判明した。
+
+| 項目 | 旧 GCF_000154205.1 | **新 GCF_025147485.1** |
+|---|---|---|
+| name | ASM15420v1 | ASM2514748v1 |
+| level | **Scaffold（33配列、Nギャップあり）** | **Complete Genome（1配列）** |
+| 全長 | 4,719,429 bp | 4,629,452 bp |
+| 公開 | 2007 / 2020 | 2022-09-12（Stanford Univ.） |
+| GenBank | — | CP102263.1 |
+| locus_tag | `BACUNI_RS*` | `NQ510_*` |
+| type material | yes | yes（type strain of *B. uniformis*） |
+
+### 切り替える理由
+
+1. **contig が 33 → 1 になる。** contig 端由来の mappability 低下が消える
+   （ステージ1で Bun_8492 の「不能(<0.1)」が 109 CDS あった）
+2. **Scaffold の N ギャップが無くなる。** ギャップ付近の CDS 分断がなくなる
+3. **locus_tag が `NQ510_*` になり**、現行の NCBI 表示・文献と対応が取れる
+
+全長が 90 kb 短いのは、Scaffold 側に重複配列や誤アセンブリが含まれていたためと考えられる。
+
+### このセルがすること
+
+1. NCBI FTP から6ファイルを取得（genomic.fna / gff / cds / translated_cds / protein / assembly_report）
+   — eggNOG とGTF作成でも使うのでまとめて落とす
+2. **NCBI の `md5checksums.txt` と突き合わせて検証**
+3. 旧 `fna/Bun_8492.fna` を `fna_archive/` に退避（`fna/` に残すと別の株として拾われるため）
+4. 新しいものを `fna/Bun_8492.fna` に展開し、`chmod 444`
+5. `provenance.tsv` を更新（差し替えた経緯も `note` 列に残す）
+
+```{python}
+# ── このセルで使うライブラリ（セル単体でも動くように、ここで import する）──────
+import urllib.request, hashlib, gzip, shutil, stat, os
+from pathlib import Path
+import pandas as pd
+
+# ── Bun_8492 を complete genome に差し替える ─────────────────
+#   当初は /db にあった GCF_000154205.1（Scaffold, 33配列）を使っていたが、
+#   同じ ATCC 8492 株の complete genome が 2022 年に公開されていた。
+#
+#     現行 GCF_000154205.1 (ASM15420v1)   Scaffold, 33配列, 4,719,429 bp, 2007/2020
+#     新   GCF_025147485.1 (ASM2514748v1) Complete, 1配列,  4,629,452 bp, 2022-09-12
+#                                         CP102263.1 / Stanford Univ. / type strain
+#
+#   切り替える理由:
+#     (1) contig が 33 → 1 になり、contig 端由来の mappability 低下が消える
+#     (2) Scaffold の N ギャップが無くなる（ギャップ付近の CDS 分断がなくなる）
+#     (3) locus_tag が NQ510_* になり、現行の文献・NCBI 表示と対応が取れる
+NEW_ACC  = "GCF_025147485.1"
+NEW_ASM  = "ASM2514748v1"
+NEW_SID  = "Bun_8492"
+FTP_BASE = (f"https://ftp.ncbi.nlm.nih.gov/genomes/all/"
+            f"{NEW_ACC[:3]}/{NEW_ACC[4:7]}/{NEW_ACC[7:10]}/{NEW_ACC[10:13]}/"
+            f"{NEW_ACC}_{NEW_ASM}")
+
+DL_DIR = GENOME_ROOT / "download" / f"{NEW_ACC}_{NEW_ASM}"
+DL_DIR.mkdir(parents=True, exist_ok=True)
+
+# eggNOG（translated_cds）や GTF 作成（gff）でも使うので、まとめて取得しておく
+SUFFIXES = ["_genomic.fna.gz", "_genomic.gff.gz", "_cds_from_genomic.fna.gz",
+            "_translated_cds.faa.gz", "_protein.faa.gz", "_assembly_report.txt"]
+
+
+def md5_of(path, chunk=1 << 20):
+    h = hashlib.md5()
+    with open(path, "rb") as f:
+        for b in iter(lambda: f.read(chunk), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+# ── NCBI の md5checksums.txt を取得（検証の基準にする）────────
+md5_txt = DL_DIR / "md5checksums.txt"
+if not md5_txt.exists():
+    urllib.request.urlretrieve(f"{FTP_BASE}/md5checksums.txt", md5_txt)
+EXPECT = {}
+for line in md5_txt.read_text().splitlines():
+    h, f = line.split()
+    EXPECT[Path(f).name] = h
+
+# ── ダウンロード → md5 検証 ──────────────────────────────────
+rows = []
+for suf in SUFFIXES:
+    fn = f"{NEW_ACC}_{NEW_ASM}{suf}"
+    dst = DL_DIR / fn
+    if not (dst.exists() and dst.stat().st_size > 0):
+        urllib.request.urlretrieve(f"{FTP_BASE}/{fn}", dst)
+    got = md5_of(dst)
+    rows.append({"file": fn.replace(f"{NEW_ACC}_{NEW_ASM}", ""),
+                 "MB": round(dst.stat().st_size / 1e6, 2),
+                 "md5検証": "OK" if got == EXPECT.get(fn) else "!! 不一致"})
+df_dl = pd.DataFrame(rows)
+print(df_dl.to_string(index=False))
+if (df_dl["md5検証"] != "OK").any():
+    raise SystemExit("!! md5 不一致。先に進まないこと")
+print("\n全ファイル md5 一致")
+
+# ── 旧 fna を退避してから、新しいものを展開する ─────────────
+old_fna = FNA_DIR / f"{NEW_SID}.fna"
+arch = GENOME_ROOT / "fna_archive"
+arch.mkdir(exist_ok=True)
+if old_fna.exists():
+    # fna/ 直下に残すと「別の株」として拾われてしまうので、別フォルダへ移す
+    dst = arch / f"{NEW_SID}_GCF_000154205.1.fna"
+    old_fna.chmod(0o644)
+    shutil.move(str(old_fna), dst)
+    dst.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    print(f"\n旧ファイルを退避: {dst}")
+
+src_gz = DL_DIR / f"{NEW_ACC}_{NEW_ASM}_genomic.fna.gz"
+with gzip.open(src_gz, "rb") as fi, open(old_fna, "wb") as fo:
+    shutil.copyfileobj(fi, fo, length=1 << 20)
+old_fna.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)   # 444
+
+ncontig, total = 0, 0
+names = []
+with open(old_fna) as f:
+    for line in f:
+        if line.startswith(">"):
+            ncontig += 1; names.append(line[1:].strip())
+        else:
+            total += len(line.strip())
+print(f"\n新 {NEW_SID}.fna: {ncontig} contig / {total:,} bp / 権限 "
+      f"{oct(old_fna.stat().st_mode)[-3:]}")
+for n in names:
+    print("   >" + n[:90])
+
+# ── provenance.tsv を更新 ────────────────────────────────────
+prov_path = GENOME_ROOT / "provenance.tsv"
+prov = pd.read_csv(prov_path, sep="\t")
+prov.loc[prov.strain_id == NEW_SID, "src_path"] = str(src_gz)
+prov.loc[prov.strain_id == NEW_SID, "src_md5_expected"] = EXPECT[src_gz.name]
+prov.loc[prov.strain_id == NEW_SID, "fna"] = str(old_fna)
+if "note" not in prov.columns:
+    prov["note"] = ""
+prov.loc[prov.strain_id == NEW_SID, "note"] = (
+    f"2026-10-20 に {NEW_ACC} (complete genome) へ差し替え。"
+    f"旧 GCF_000154205.1 (scaffold) は fna_archive/ に退避")
+prov.to_csv(prov_path, sep="\t", index=False)
+print("\nprovenance.tsv を更新:", prov_path)
+print(prov[["strain_id", "src_md5_expected"]].to_string(index=False))
+```

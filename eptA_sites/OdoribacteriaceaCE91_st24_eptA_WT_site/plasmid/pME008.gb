@@ -1,0 +1,1463 @@
+LOCUS       pSL5053                15808 bp ds-DNA     circular     13-JUN-2025
+DEFINITION  .
+ACCESSION   AB775804
+VERSION     AB775804.1
+SOURCE      Escherichia coli-Bacteroides shuttle vector pTIO-1
+  ORGANISM  Escherichia coli-Bacteroides shuttle vector pTIO-1 other sequences;
+            artificial sequences; vectors.
+COMMENT     Imported using the Genbank importer. File name: pTIO-1.gb
+            Escherichia coli-Bacteroides shuttle vector pTIO-1 DNA, complete
+            sequence.
+FEATURES             Location/Qualifiers
+     primer          183..202
+                     /label="oSL4344"
+                     /note="sequence: ACGGGTTTTTATGGCGTGTA"
+     misc_feature    397..455
+                     /label="CUTE_SITE2_WGS"
+     misc_feature    416..5110
+                     /label="From p2126"
+     primer          428..449
+                     /label="oSL6977"
+                     /note="sequence: TGCAAGCAAGGATTGACAAGGC"
+     primer          428..449
+                     /label="gibson_F"
+                     /note="sequence: TGCAAGCAAGGATTGACAAGGC"
+     primer          complement(445..469)
+                     /label="oSL7112-pSL2130_half"
+                     /note="sequence: ATCACTCGAGTTCTTCCCTTGCCTT"
+     primer          445..489
+                     /label="oSL7113"
+                     /note="sequence: AAGGCAAGGGAAGAACTCGAGTGATCTGGAAGAAGCAATGAAAGC"
+     misc_binding    466..748
+                     /label="Sigma70 Promoter"
+     promoter        700..702
+                     /label=-33
+     primer          complement(708..727)
+                     /label="oSL7197"
+                     /note="sequence: TAATTTGTTAACATACATAT"
+     primer          711..747
+                     /label="oSL6755"
+                     /note="sequence: TGTATGTTAACAAATTATTTGTCGTAACTTTGCACTC"
+     primer          complement(723..747)
+                     /label="oSL7197"
+                     /note="sequence: GAGTGCAAAGTTACGACAAATAATT"
+     promoter        732..742
+                     /label=-7
+     primer          complement(737..796)
+                     /label="oSL6757"
+                     /note="sequence: ATTCGTTTAATTAAGTAAATTATTTATTTTATTTTAAAATGCGGCCGCGGAGTGCAAAGT"
+     primer          complement(737..796)
+                     /label="oSL6978"
+                     /note="sequence: ATTCGTTTAATTAAGTAAATTATTTATTTTATTTTAAAATGCGGCCGCGGAGTGCAAAGT"
+     misc_feature    complement(742..748)
+                     /label="""""Geneious type: primer_bind_reverse"""" 5738..5767"
+     RBS             754..796
+                     /label="B1_strong RBS"
+     primer          759..796
+                     /label="oSL6756"
+                     /note="sequence: TTTAAAATAAAATAAATAATTTACTTAATTAAACGAAT"
+     primer          759..818
+                     /label="oSL6979"
+                     /note="sequence: TTTAAAATAAAATAAATAATTTACTTAATTAAACGAATATGGCGACAAGTTTACCTACGC"
+     primer          796..817
+                     /label="oSL2786"
+                     /note="sequence: CCCTTAATCTGACCTTTAATAAGGAGATATACTATGGCGACAAGTTTACCTACG"
+     primer          797..816
+                     /label="oSL7922"
+                     /note="sequence: CCTTTAATAAGGAGATATAGCATGGCGACAAGTTTACCTAC"
+     primer          797..816
+                     /label="oSL1815"
+                     /note="sequence: TCGAGATTTTCAGGAGCTAAGGAAGCTAAAATGGCGACAAGTTTACCTAC"
+     primer          797..818
+                     /label="oSL6894"
+                     /note="sequence: atggcgacaagtttacctacgc"
+     primer          797..818
+                     /label="oSL6894"
+                     /note="sequence: ATGGCGACAAGTTTACCTACGC"
+     CDS             797..1489
+                     /label="#267_TnsA_extraAA"
+     CDS             797..1489
+                     /label="Translation 797-1489"
+                     /translation="MATSLPTPSAITTSALEYAFHTPARNLTKSRGKNIHRYVSVKMSKRITVESTLECDACYHFDFEPSIVRFCAQPIRFLYYLNGQSHSYVPDFLVQFDTNEFVLYEVKSAYAKNKPDFDVEWEAKVKAATELGLELELVEESDIRDTVVLNNLKRMHRYASKDELNNVHNSLLKIIKYNGAQSARCLGEQLGLKGRTVLPILCDLLSRCLLDTRLDKPLSLESRFELASYG*"
+     primer          803..836
+                     /label="gibson_assembly_F"
+                     /note="sequence: ACAAGTTTACCTACGCCCTCAGCAATTACGACTT"
+     primer          complement(804..823)
+                     /label="oSL7114"
+                     /note="sequence: TGAGGGCGTAGGTAAACTTG"
+     primer          complement(1050..1069)
+                     /label="oSL4030"
+                     /note="sequence: GTCAGGAACATAGGAGTGAG"
+     primer          1085..1106
+                     /label="oSL6859"
+                     /note="sequence: GATACCAACGAGTTTGTTCTAT"
+     primer          1175..1194
+                     /label="oSL4033"
+                     /note="sequence: GCAGCAACTGAACTAGGGCT"
+     primer          complement(1227..1265)
+                     /label="M154/I_primer_R"
+                     /note="sequence: GATGCATGCGCTTAAGATTATTTAATACAACCGTATCCC"
+     primer          1246..1273
+                     /label="M154/I_primer_F"
+                     /note="sequence: TAATCTTAAGCGCATGCATCGTTATGCT"
+     primer          complement(1375..1394)
+                     /label="oSL4345"
+                     /note="sequence: TTGGTAAAACAGTTCGGCCT"
+     primer          complement(1450..1471)
+                     /label="oSL6895"
+                     /note="sequence: ctcaaatcgagattcaagagat"
+     primer          complement(1450..1471)
+                     /label="oSL6895"
+                     /note="sequence: CTCAAATCGAGATTCAAGAGAT"
+     primer          complement(1463..1482)
+                     /label="oSL2212"
+                     /note="sequence: GGATTGGAAGTAGAGGTTCTCGCCATAACTGGCCAACTCAAATCG"
+     primer          complement(1464..1485)
+                     /label="oSL3734"
+                     /note="sequence: CTTTATAATCACCGTCATGGTCTTTGTAGTCCATTATTTACCTCCTTTTAACCGTAACTGGCCAACTCAAATC"
+     primer          complement(1464..1485)
+                     /label="oSL3732"
+                     /note="sequence: GATCTTTATAATCACCGTCATGGTCTTTGTAGTCCGATCCGCTTCCTCCACCGTAACTGGCCAACTCAAATC"
+     Recoded         1482..1489
+                     /label="recoded beginning of TsnB"
+     primer          complement(1490..1527)
+                     /label="TnsA_R"
+                     /note="sequence: TAATTATATCATTTATTTTATTTTAAAATGCGGCGCGC"
+     RBS             1496..1538
+                     /label="RBS B2"
+     primer          1501..1538
+                     /label="TnsB_F"
+                     /note="sequence: TTTAAAATAAAATAAATGATATAATTAATTAAACGAAT"
+     misc_feature    1539..1546
+                     /label="#267_TnsB"
+     misc_feature    1539..1546
+                     /label="#267_TnsA_extraAA"
+     primer          1539..1558
+                     /label="oSL0115"
+                     /note="sequence: TACTTCCAATCCAATGCAATGGCTAAGAAAGGGTTCTC"
+     primer          1539..1558
+                     /label="oSL3731"
+                     /note="sequence: ATGACATCGATTACAAGGATGACGATGACAAGTAAAAGGAGGTAAATAATGGCTAAGAAAGGGTTCTC"
+     primer          1539..1566
+                     /label="oSL2213"
+                     /note="sequence: TTTAAGAAGGAGATATAGTTCATGGCTAAGAAAGGGTTCTCAAGTTTCC"
+     CDS             1539..3350
+                     /label="#267_TnsB"
+     CDS             1539..3350
+                     /label="Translation 1539-3350"
+                     /translation="MAKKGFSSFHRKAVSSQDTLESIELVSSANCLESVTYQDISAFPETIAVEINFRLSILRFLARKCETIVAKSIEPHRVELQQNYSRKIPSAITIYRWWLAFRKSDYNPISLAPNIKDRGNRETKVSTVVDSIMEQAVERVISGRKVNVSSAYKRVRRKVRQYNLTHGTKYTYPKYESVRKRVKKKTPFELLAAGKGERVAKREFRRMGKKILTSSVLERVEIDHTVVDLFAVHEEYRIPLGRPWLTQLVDCYSKAVIGFYLGFEPPSYVSVSLALKNAIQRKDDLISSYESIENEWLCYGIPDLLVTDNGKEFLSKAFDQACESLLINVHQNKVETPDNKPHVERNYGTINTSLLDDLPGKSFSQYLQREGYDSVGEATLTLNEIREIYLIWLVDIYHKKPNQRGTNCPNVAWKKGCQEWEPEEFSGSKDELDFKFAIVDYKQLTKVGITVYKELSYSNDRLAEYRGKKGNHKVQFKYNPECMAVIWVLDEDMNEYFTVNAIDYEYASRVSLWQHKYNMKYQAELNSAEYDEDKEIDAEIKIEEIADRSIVKTNKIRARRRGARHQENSARAKSISNANPASIQKHEDEIVSADNDDWDIDYV*"
+     primer          1543..1566
+                     /label="oSL6896"
+                     /note="sequence: CTAAGAAAGGGTTCTCAAGTTTCC"
+     primer          1543..1566
+                     /label="oSL6896"
+                     /note="sequence: ctaagaaagggttctcaagtttcc"
+     primer          2185..2206
+                     /label="oSL6858"
+                     /note="sequence: TGCTAGAGAGGGTTGAAATAGA"
+     primer          2185..2206
+                     /label="oSL6858"
+                     /note="sequence: TGCTAGAGAGGGTTGAAATAGA"
+     primer          complement(2552..2579)
+                     /label="Y346/F_primer_R"
+                     /note="sequence: GTAGTTACGTTCAACATGAGGTTTGTTG"
+     primer          2562..2589
+                     /label="Y346/F_primer_F"
+                     /note="sequence: CATGTTGAACGTAACTACGGGACTATTA"
+     primer          complement(2851..2872)
+                     /label="oSL6897"
+                     /note="sequence: gtaagttgtttgtaatcaacaa"
+     primer          3225..3244
+                     /label="oSL5692"
+                     /note="sequence: GCTAGGCATCAAGAGAATAG"
+     primer          complement(3316..3347)
+                     /label="oSL2214"
+                     /note="sequence: GGATTGGAAGTAGAGGTTCTCGACATAATCAATATCCCAATCGTCATTATCTG"
+     primer          complement(3324..3348)
+                     /label="oSL0118"
+                     /note="sequence: TTATCCACTTCCAATGCTATTAGACATAATCAATATCCCAATCGTC"
+     primer          complement(3325..3347)
+                     /label="oSL4057"
+                     /note="sequence: TTGGGTCCGGAACCGACATAATCAATATCCCAATCGT"
+     primer          complement(3325..3347)
+                     /label="oSL2813"
+                     /note="sequence: GACATAATCAATATCCCAATCGT"
+     primer          complement(3325..3347)
+                     /label="oSL1873"
+                     /note="sequence: GTTCTCTTCTACATCACCGCAAGTCAAAAGACTGCCACGACCCTCGCCGGACCCGACATAATCAATATCCCAATCGT"
+     primer          complement(3329..3388)
+                     /label="oSL6984"
+                     /note="sequence: TTAATTATATTATTTATTTTATTTTAAAATGCGACCGGTCAGACATAATCAATATCCCAA"
+     primer          complement(3339..3371)
+                     /label="gibson_assembly_R"
+                     /note="sequence: TTTATTTTAAAATGCGACCGGTCAGACATAATC"
+     primer          complement(3351..3388)
+                     /label="TnsB_R"
+                     /note="sequence: TTAATTATATTATTTATTTTATTTTAAAATGCGACCGG"
+     RBS             3356..3398
+                     /label="RBS B3"
+     primer          3361..3398
+                     /label="TnsC_F"
+                     /note="sequence: TTTAAAATAAAATAAATAATATAATTAATTAAACGAAT"
+     primer          3361..3413
+                     /label="oSL6986"
+                     /note="sequence: TTTAAAATAAAATAAATAATATAATTAATTAAACGAATATGAGTGAAACGCGT"
+     primer          3361..3420
+                     /label="oSL6985"
+                     /note="sequence: TTTAAAATAAAATAAATAATATAATTAATTAAACGAATATGAGTGAAACGCGTGAGGCTC"
+     primer          3399..3420
+                     /label="oSL2250"
+                     /note="sequence: TACTTCCAATCCAATGCAATGAGTGAAACGCGTGAGGCTC"
+     CDS             3399..4391
+                     /label="#267_TnsC"
+     CDS             3399..4391
+                     /label="Translation 3399-4391"
+                     /translation="MSETREARISRAKRAFVSTPSVRKILSYMDRCRDLSDLESEPTCMMVYGASGVGKTTVIKKYLNQNRRESEAGGDIIPVLHIELPDNAKPVDAARELLVEMGDPLALYETDLARLTKRLTELIPAVGVKLIIIDEFQHLVEERSNRVLTQVGNWLKMILNKTKCPIVIFGMPYSKVVLQANSQLHGRFSIQVELRPFSYQGGRGVFKTFLEYLDKALPFEKQAGLANESLQKKLYAFSQGNMRSLRNLIYQASIEAIDNQHETITEEDFVFASKLTSGDKPNSWKNPFEEGVEVTEDMLRPPPKDIGWEDYLRHSTPRVSKPGRNKNFFE*"
+     primer          complement(3402..3429)
+                     /label="oSL6821"
+                     /note="sequence: TTGATATACGAGCCTCACGCGTTTCACT"
+     primer          complement(3402..3429)
+                     /label="oSL6821"
+                     /note="sequence: TTGATATACGAGCCTCACGCGTTTCACT"
+     primer          3438..3457
+                     /label="oSL5688"
+                     /note="sequence: AGGGCATTTGTATCCACACC"
+     primer          3501..3522
+                     /label="oSL2850"
+                     /note="sequence: CTATCAGACCTAGAGTCTGAGC"
+     primer          3504..3523
+                     /label="oSL5691"
+                     /note="sequence: TCAGACCTAGAGTCTGAGCC"
+     primer          complement(3533..3552)
+                     /label="oSL1840"
+                     /note="sequence: CCGAAGCACCATAGACCATC"
+     primer          complement(3539..3558)
+                     /label="oSL2848"
+                     /note="sequence: CTACACCCGAAGCACCATAG"
+     primer          complement(3725..3746)
+                     /label="oSL6881"
+                     /note="sequence: CGTCAATCTAGCTAAGTCAGTT"
+     primer          complement(3726..3746)
+                     /label="oSL6879"
+                     /note="sequence: CGTCAATCTAGCTAAGTCAGT"
+     primer          complement(3753..3773)
+                     /label="oSL1852"
+                     /note="sequence: CGCAGGGATTAATTCAGTCAG"
+     primer          complement(3789..3812)
+                     /label="oSL6875"
+                     /note="sequence: ATGTTGGAACTCATCGATAATAAT"
+     primer          complement(3798..3824)
+                     /label="oSL6964"
+                     /note="sequence: TTCTTCCACCAAATGTTGGAACTCATC"
+     primer          complement(3803..3827)
+                     /label="oSL6968"
+                     /note="sequence: CCTTTCTTCCACCAAATGTTGGAAC"
+     primer          complement(3805..3824)
+                     /label="oSL6873"
+                     /note="sequence: TTCTTCCACCAAATGTTGGA"
+     primer          complement(3808..3833)
+                     /label="oSL6966"
+                     /note="sequence: ATTTGACCTTTCTTCCACCAAATGTT"
+     primer          3816..3836
+                     /label="oSL1842"
+                     /note="sequence: GTGGAAGAAAGGTCAAATCGG"
+     primer          3828..3847
+                     /label="oSL6963"
+                     /note="sequence: GCCTCAAATCGGGTTCTTACCCA"
+     primer          complement(4193..4217)
+                     /label="oSL5686"
+                     /note="sequence: CGATGCAAAAACGAAATCTTCTTCG"
+     primer          complement(4231..4253)
+                     /label="oSL5685"
+                     /note="sequence: TTTCCATGAGTTGGGTTTATCGC"
+     primer          complement(4233..4253)
+                     /label="oSL4737"
+                     /note="sequence: TGCTTTCCATGAGTTGGGTTTATC"
+     primer          complement(4242..4268)
+                     /label="oSL5684"
+                     /note="sequence: CTCCTCAAAAGGATTTTTCCATGAGTT"
+     primer          complement(4287..4307)
+                     /label="oSL5683"
+                     /note="sequence: TGGTGGCGGTCGTAACATATC"
+     primer          4311..4334
+                     /label="oSL8274"
+                     /note="sequence: GATATTGGTTGGGAGGACTATTTG"
+     primer          4322..4342
+                     /label="oSL2584"
+                     /note="sequence: GGAGGACTATTTGAGACATTC"
+     primer          complement(4357..4388)
+                     /label="oSL2831"
+                     /note="sequence: TAATCACCGTCATGGTCTTTGTAGTCCGATCCGCTTCCTCCTTCGAAAAAGTTTTTATTTCTACCTGGTTTAC"
+     primer          complement(4359..4388)
+                     /label="oSL2827"
+                     /note="sequence: CTCCAAGAACCGCTGCCACCTTCGAAAAAGTTTTTATTTCTACCTGGTTT"
+     primer          complement(4362..4388)
+                     /label="oSL2815"
+                     /note="sequence: CTGCCACGACCCTCCGAGGACCCTTCGAAAAAGTTTTTATTTCTACCTGG"
+     primer          complement(4362..4389)
+                     /label="oSL3785"
+                     /note="sequence: CGTTTCGCTACCGGATTCGAAAAAGTTTTTATTTCTACCTGG"
+     primer          complement(4362..4391)
+                     /label="oSL3493"
+                     /note="sequence: ATTATGCGGCCGCTTATTCGAAAAAGTTTTTATTTCTACCTGG"
+     primer          complement(4362..4391)
+                     /label="oSL3789"
+                     /note="sequence: CAGCAGCCTAGGCTATTATTCGAAAAAGTTTTTATTTCTACCTGG"
+     primer          complement(4363..4391)
+                     /label="oSL0119"
+                     /note="sequence: TTATCCACTTCCAATGCTATTATTCGAAAAAGTTTTTATTTCTACCTG"
+     primer          complement(4370..4429)
+                     /label="oSL6987"
+                     /note="sequence: ATTAAGTAAATTATTTATTTTATTTTAAAATGCGTACGTTATTCGAAAAAGTTTTTATTT"
+     primer          complement(4372..4391)
+                     /label="oSL6900"
+                     /note="sequence: ttattcgaaaaagtttttat"
+     primer          complement(4392..4429)
+                     /label="TnsC_R"
+                     /note="sequence: ATTAAGTAAATTATTTATTTTATTTTAAAATGCGTACG"
+     primer          4392..4451
+                     /label="oSL6988"
+                     /note="sequence: CGTACGCATTTTAAAATAAAATAAATAATTTACTTAATTAAACGAATATGTTTTTGCAAA"
+     primer          4392..4451
+                     /label="practice_F"
+                     /note="sequence: CGTACGCATTTTAAAATAAAATAAATAATTTACTTAATTAAACGAATATGTTTTTGCAAA"
+     RBS             4396..4438
+                     /label="B1_strong RBS"
+     primer          4438..4460
+                     /label="oSL1858"
+                     /note="sequence: AGAAAAAGCGTAAAGTTGGTTCTGGTATGTTTTTGCAAAGACCTAAAC"
+     primer          4438..4460
+                     /label="oSL1929"
+                     /note="sequence: GAGGAGAAAGGATCTATGTTTTTGCAAAGACCTAAAC"
+     primer          4438..4461
+                     /label="oSL0938"
+                     /note="sequence: GCTACTCCGGAAAGCGGAGGCTCTGGCTCGTCAGGAGGTTCAGGAAGTTCAGGCGGTATGTTTTTGCAAAGACCTAAACC"
+     primer          4438..4461
+                     /label="oSL0128"
+                     /note="sequence: TACTTCCAATCCAATGCATGGAGCCACCCGCAGTTCGAAAAAGGTGGCAGCGGTTCTATGTTTTTGCAAAGACCTAAACC"
+     primer          4439..4460
+                     /label="oSL1819"
+                     /note="sequence: TCGAGATTTTCAGGAGCTAAGGAAGCTAAAATGTTTTTGCAAAGACCTAAAC"
+     primer          4439..4460
+                     /label="oSL8392"
+                     /note="sequence: ATCACCTGCATGCCATGTTTTTGCAAAGACCTAAAC"
+     primer          4439..4461
+                     /label="oSL8309"
+                     /note="sequence: ACTTTAATAAGGAGATATACCATGTTTTTGCAAAGACCTAAACC"
+     primer          4439..4461
+                     /label="oSL0120"
+                     /note="sequence: TACTTCCAATCCAATGCAATGTTTTTGCAAAGACCTAAACC"
+     CDS             4439..5623
+                     /label="#267_TniQ"
+     CDS             4439..5623
+                     /label="Translation 4439-5623"
+                     /translation="MFLQRPKPYSDESLESFFIRVANKNGYGDVHRFLEATKRFLQDIDHNGYQTFPTDITRINPYSAKNSSSARTASFLKLAQLTFNEPPELLGLAINRTNMKYSPSTSAVVRGAEVFPRSLLRTHSIPCCPLCLRENGYASYLWHFQGYEYCHSHNVPLITTCSCGKEFDYRVSGLKGICCKCKEPITLTSRENGHEAACTVSNWLAGHESKPLPNLPKSYRWGLVHWWMGIKDSEFDHFSFVQFFSNWPRSFHSIIEDEVEFNLEHAVVSTSELRLKDLLGRLFFGSIRLPERNLQHNIILGELLCYLENRLWQDKGLIANLKMNALEATVMLNCSLDQIASMVEQRILKPNRKSKPNSPLDVTDYLFHFGDIFCLWLAEFQSDEFNRSFYVSRW*"
+     primer          4441..4461
+                     /label="oSL8527"
+                     /note="sequence: CGATTACAAGGATGACGATGACAAGTTTTTGCAAAGACCTAAACC"
+     primer          4442..4465
+                     /label="oSL4510"
+                     /note="sequence: TACAAGGACGACGACGACAAGGGATCCGGATTTTTGCAAAGACCTAAACCTTAC"
+     primer          complement(4509..4528)
+                     /label="oSL4354"
+                     /note="sequence: GACATCACCGTAGCCATTTT"
+     primer          4568..4590
+                     /label="oSL2173"
+                     /note="sequence: GCAGCGGCGGCAGCTGCGATTGACCATAATGGCTATCAAAC"
+     primer          4577..4596
+                     /label="oSL4355"
+                     /note="sequence: AATGGCTATCAAACCTTTCC"
+     primer          4737..4756
+                     /label="oSL4023"
+                     /note="sequence: AATACTCGCCGTCAACTAGC"
+     primer          complement(4788..4813)
+                     /label="oSL1501"
+                     /note="sequence: GATGGAGTGCGTCCGTAGTAAACTGC"
+     primer          4831..4851
+                     /label="oSL1612"
+                     /note="sequence: CCCTGCTCTCCTTTGTCTCTGCGAGAAAATGGCTACGC"
+     primer          complement(4855..4879)
+                     /label="oSL1503"
+                     /note="sequence: GTACCCCTGAAAGTGCCAAAGGTAG"
+     primer          complement(4911..4930)
+                     /label="oSL4357"
+                     /note="sequence: ACCACAGCTACAAGTGGTAA"
+     primer          complement(5048..5067)
+                     /label="oSL8404"
+                     /note="sequence: ATCACCTGCATGCTTAGATTCATGGCCAGCAAG"
+     primer          5065..5084
+                     /label="oSL8405"
+                     /note="sequence: ATCACCTGCATGCGTAAACCTCTGCCAAATCTTC"
+     misc_feature    5066..9648
+                     /label="From p2127"
+     primer          complement(5161..5180)
+                     /label="oSL4361"
+                     /note="sequence: GCCAGTTTGAGAAAAATTGA"
+     primer          complement(5176..5195)
+                     /label="oSL4025"
+                     /note="sequence: AGTGGAATGACCTTGGCCAG"
+     primer          complement(5193..5216)
+                     /label="oSL2182"
+                     /note="sequence: GGCCGCAGCTGCGGCTGCCGCGGCTACTTCATCTTCGATTATCGAGT"
+     primer          5196..5217
+                     /label="oSL4362"
+                     /note="sequence: CGATAATCGAAGATGAAGTAGA"
+     primer          5257..5279
+                     /label="oSL2172"
+                     /note="sequence: GCGGCGGCTGCAGCAGCACGACTAAAAGATCTTCTTGGTC"
+     primer          complement(5359..5378)
+                     /label="oSL4358"
+                     /note="sequence: CTTGCCATAAACGATTTTCT"
+     primer          5365..5386
+                     /label="oSL8273"
+                     /note="sequence: TCGTTTATGGCAAGACAAGGGA"
+     primer          5412..5431
+                     /label="oSL1159"
+                     /note="sequence: CGTTAGAGGCGACTGTAATG"
+     primer          complement(5448..5468)
+                     /label="oSL2184"
+                     /note="sequence: AGCTGCAGCAGCAGCCGCCGCAGCGGCAACCATTGATGCAATCTGAT"
+     primer          5522..5546
+                     /label="oSL2174"
+                     /note="sequence: GCCGCCGCTGCGGCTGCTGCCGCGGCGGTTACCGATTATCTATTTCATTTCG"
+     primer          complement(5560..5579)
+                     /label="oSL4359"
+                     /note="sequence: GGAACTCAGCTAACCAAAGA"
+     primer          5592..5613
+                     /label="oSL5992"
+                     /note="sequence: ACAAATAGGGGTTCCGCGCACATTTCCCCGAAAAGTGGTTAACCGTTCGTTTTATGTGTC"
+     primer          complement(5598..5620)
+                     /label="oSL0808"
+                     /note="sequence: CCACCTCGACACATAAAACGAAC"
+     primer          complement(5601..5623)
+                     /label="oSL0122"
+                     /note="sequence: TTATCCACTTCCAATGCTATTACCACCTCGACACATAAAACG"
+     primer          complement(5601..5623)
+                     /label="oSL1807"
+                     /note="sequence: TTACCACCTCGACACATAAAACG"
+     primer          complement(5602..5621)
+                     /label="oSL0944"
+                     /note="sequence: TTCCGGAGTAGCAGATTCAGAAGTCCCCGGCGTTTCGCTACCGGACCACCTCGACACATAAAAC"
+     primer          complement(5602..5623)
+                     /label="oSL3082"
+                     /note="sequence: GTTTACCCATTTACCACCTCGACACATAAAAC"
+     primer          complement(5602..5623)
+                     /label="oSL0939"
+                     /note="sequence: GCAGCAGCCTAGGCTATTACCACCTCGACACATAAAAC"
+     primer          complement(5602..5623)
+                     /label="oSL3079"
+                     /note="sequence: CCTCCTTTTACCACCTCGACACATAAAAC"
+     primer          complement(5602..5624)
+                     /label="oSL8393"
+                     /note="sequence: ATCACCTGCATGCCTAGTTACCACCTCGACACATAAAAC"
+     primer          complement(5602..5625)
+                     /label="oSL4511"
+                     /note="sequence: CACTTCCAATATTGGATTGGAAGTAGGTTACCACCTCGACACATAAAAC"
+     RBS             5630..5672
+                     /label="RBS B2"
+     primer          complement(5666..5692)
+                     /label="oSL6989"
+                     /note="sequence: AGTTCTTTCAGAGTTTGCATATTCGTT"
+     primer          complement(5666..5692)
+                     /label="gibson_R"
+                     /note="sequence: AGTTCTTTCAGAGTTTGCATATTCGTT"
+     primer          5670..5696
+                     /label="oSL2816"
+                     /note="sequence: TAAGAAGGAGGTAAATATGCAAACTCTGAAAGAACTAATC"
+     primer          5671..5691
+                     /label="oSL0765"
+                     /note="sequence: TATCATATGCAAACTCTGAAAGAAC"
+     primer          5671..5691
+                     /label="oSL7931"
+                     /note="sequence: GAATTCGAGCGAAGGAGATATACATATGCAAACTCTGAAAGAAC"
+     primer          5671..5696
+                     /label="oSL2768"
+                     /note="sequence: GTACATATGCAAACTCTGAAAGAACTAATC"
+     primer          5671..5697
+                     /label="oSL2847"
+                     /note="sequence: GAATTCGAGCGAAGGAGATATACATATGCAAACTCTGAAAGAACTAATCG"
+     primer          5672..5692
+                     /label="oSL1860"
+                     /note="sequence: CTAAAAGGAGGTAAATAATGCCTGGACCTAAGAAAAAGCGTAAAGTTGGTACCGGTATGCAAACTCTGAAAGAACT"
+     primer          5672..5695
+                     /label="oSL0129"
+                     /note="sequence: TACTTCCAATCCAATGCATGGAGCCACCCGCAGTTCGAAAAAGGTGGCAGCGGTTCTATGCAAACTCTGAAAGAACTAAT"
+     primer          5672..5696
+                     /label="oSL0943"
+                     /note="sequence: AGCGGAGGCTCTGGCTCGTCAGGAGGTTCAGGAAGTTCAGGCGGTATGCAAACTCTGAAAGAACTAATC"
+     primer          5673..5696
+                     /label="oSL0121"
+                     /note="sequence: TACTTCCAATCCAATGCAATGCAAACTCTGAAAGAACTAATC"
+     primer          5673..5696
+                     /label="oSL2800"
+                     /note="sequence: ATGCAAACTCTGAAAGAACTAATC"
+     CDS             5673..7595
+                     /label="#267_Cas8"
+     CDS             5673..7595
+                     /label="Translation 5673-7595"
+                     /translation="MQTLKELIASNPDDLTTELKRAFRPLTPHIAIDGNELDALTILVNLTDKTDDQKDLLDRAKCKQKLRDEKWWASCINCVNYRQSHNPKFPDIRSEGVIRTQALGELPSFLLSSSKIPPYHWSYSHDSKYVNKSAFLTNEFCWDGEISCLGELLKDADHPLWNTLKKLGCSQKTCKAMAKQLADITLTTINVTLAPNYLTQISLPDSDTSYISLSPVASLSMQSHFHQRLQDENRHSAITRFSRTTNMGVTAMTCGGAFRMLKSGAKFSSPPHHRLNSKRSWLTSEHVQSLKQYQRLNKSLIPENSRIALRRKYKIELQNMVRSWFAMQDHTLDSNILIQHLNHDLSYLGATKRFAYDPAMTKLFTELLKRELSNSINNGEQHTNGSFLVLPNIRVCGATALSSPVTVGIPSLTAFFGFVHAFERNINRTTSSFRVESFAICVHQLHVEKRGLTAEFVEKGDGTISAPATRDDWQCDVVFSLILNTNFAQHIDQDTLVTSLPKRLARGSAKIAIDDFKHINSFSTLETAIESLPIEAGRWLSLYAQSNNNLSDLLAAMTEDHQLMASCVGYHLLEEPKDKPNSLRGYKHAIAECIIGLINSITFSSETDPNTIFWSLKNYQNYLVVQPRSINDETTDKSSL*"
+     primer          complement(5768..5787)
+                     /label="oSL4360"
+                     /note="sequence: CGTCAAGTTCATTACCATCA"
+     primer          complement(6536..6555)
+                     /label="oSL7932"
+                     /note="sequence: GCTGGTACTGTTTTAATGAC"
+     primer          6825..6851
+                     /label="oSL2166"
+                     /note="sequence: GGTGGATCAGGGGGTTCAGGATCGTTTTTAGTCCTACCGAATATC"
+     primer          complement(6895..6914)
+                     /label="oSL2177"
+                     /note="sequence: AGCTGTAAGTGATGGAATCC"
+     primer          6945..6967
+                     /label="oSL2167"
+                     /note="sequence: GCTGCAGCAGCGGCCGCTGCGGCGGCAGCCAATATAAATCGCACCACCTCATC"
+     primer          complement(7111..7134)
+                     /label="oSL2400"
+                     /note="sequence: CAAAGTTGGTGTTCAAAATAAGGC"
+     primer          complement(7156..7178)
+                     /label="oSL2179"
+                     /note="sequence: CTTTGGTAGTGATGTAACTAACG"
+     primer          complement(7398..7418)
+                     /label="oSL2178"
+                     /note="sequence: GGAGTTTGGTTTATCTTTGGG"
+     primer          complement(7550..7573)
+                     /label="oSL1863"
+                     /note="sequence: ATTTACCTCCTTCTTATAATGAGGACTTATCTGTGGTTTCATCGTTGATACTCCTTGGC"
+     primer          7567..7588
+                     /label="oSL1862"
+                     /note="sequence: AATGGGACCTAAGAAAAAGCGTAAAGTTGGTTCTGCCATGAAACTACCGACAAATCTAG"
+     primer          7567..7588
+                     /label="oSL2804"
+                     /note="sequence: GATGTAGAAGAGAACCCTGGCTAAGAAGGAGGTAAATAATGAAACTACCGACAAATCTAG"
+     primer          7567..7591
+                     /label="oSL1617"
+                     /note="sequence: TACTTCCAATCCAATGCAATGAAACTACCGACAAATCTAGCCT"
+     Recoded         7567..7595
+                     /label="recoded beginning of Cas7"
+     RBS             7602..7644
+                     /label="RBS B3"
+     primer          7645..7666
+                     /label="oSL2804"
+                     /note="sequence: GATGTAGAAGAGAACCCTGGCTAAGAAGGAGGTAAATAATGAAACTACCGACAAATCTAG"
+     primer          7645..7666
+                     /label="oSL1862"
+                     /note="sequence: AATGGGACCTAAGAAAAAGCGTAAAGTTGGTTCTGCCATGAAACTACCGACAAATCTAG"
+     primer          7645..7669
+                     /label="oSL1617"
+                     /note="sequence: TACTTCCAATCCAATGCAATGAAACTACCGACAAATCTAGCCT"
+     CDS             7645..8703
+                     /label="#267_Cas7"
+     CDS             7645..8703
+                     /label="Translation 7645-8703"
+                     /translation="MKLPTNLAYERSIDPSDVCFFVVWPDDRKTPLTYNSRTLLGQMEAASLAYDVSGQPIKSATAEALAQGNPHQVDFCHVPYGASHIECSFSVSFSSELRQPYKCNSSKVKQTLVQLVELYETKIGWTELATRYLMNICNGKWLWKNTRKAYCWNIVLTPWPWNGEKVGFEDIRTNYTSRQDFKNNKNWSAIVEMIKTAFSSTDGLAIFEVRATLHLPTNAMVRPSQVFTEKESGSKSKSKTQNSRVFQSTTIDGERSPILGAFKTGAAIATIDDWYPEATEPLRVGRFGVHREDVTCYRHPSTGKDFFSILQQAEHYIEVLSANKTPAQETINDMHFLMANLIKGGMFQHKGD*"
+     primer          complement(8680..8703)
+                     /label="oSL1618"
+                     /note="sequence: TTATCCACTTCCAATGTTATTATCAGTCTCCTTTATGCTGGAACAT"
+     RBS             8704..8729
+                     /label="RBS pbT1311"
+     primer          8730..8756
+                     /label="oSL2806"
+                     /note="sequence: ATGAAATGGTATTATAAGACAATCACC"
+     CDS             8730..9329
+                     /label="#267_Cas6"
+     CDS             8730..9329
+                     /label="Translation 8730-9329"
+                     /translation="MKWYYKTITFLPELCNNESLAAKCLRVLHGFNYQYETRNIGVSFPLWCDATVGKKISFVSKNKIELDLLLKQHYFVQMEQLQYFHISNTVLVPEDCTYVSFRRCQSIDKLTAAGLARKIRRLEKRALSRGEQFDPSSFAQKEHTAIAHYHSLGESSKQTNRNFRLNIRMLSEQPREGNSIFSSYGLSNSENSFQPVPLI*"
+     primer          8731..8755
+                     /label="oSL1864"
+                     /note="sequence: GAAAGGAGGTAAATAATGCCTTCCCCTAAGAAAAAGCGTAAAGTTGGCACCGGTGTGAAATGGTATTATAAGACAATCAC"
+     primer          8731..8756
+                     /label="oSL0331"
+                     /note="sequence: TGAAATGGTATTATAAGACAATCACC"
+     primer          8731..8761
+                     /label="oSL1614"
+                     /note="sequence: GTGAAATGGTATTATAAGACAATCACCTTTCT"
+     primer          8731..8762
+                     /label="oSL1808"
+                     /note="sequence: GTGAAATGGTATTATAAGACAATCACCTTTCTG"
+     primer          8733..8760
+                     /label="oSL4508"
+                     /note="sequence: TACAAGGACGACGACGACAAGGGATCCGGAAAATGGTATTATAAGACAATCACCTTTC"
+     primer          8949..8970
+                     /label="oSL2171"
+                     /note="sequence: GGAGGCAGTGGAGGCTCAGGGGGTAGCGGAGGGTCATATTTCGTCCAAATGGAACAAC"
+     primer          complement(9131..9152)
+                     /label="oSL2180"
+                     /note="sequence: TTTTTGAGCAAAAGATGATGGG"
+     primer          9270..9298
+                     /label="oSL6827"
+                     /note="sequence: TTTAGTAGCTATGGCTTATCAAATTCAGA"
+     primer          9302..9321
+                     /label="oSL6682"
+                     /note="sequence: CTCGTTTCAGCCTGTACCCT"
+     primer          complement(9305..9327)
+                     /label="oSL0123"
+                     /note="sequence: TTATCCACTTCCAATGCTATTAGATTAAGGGTACAGGCTGAAAC"
+     primer          complement(9309..9330)
+                     /label="oSL9667"
+                     /note="sequence: ATGGTCTCCTCGAGTCAGATTAAGGGTACAGGCTG"
+     primer          complement(9310..9329)
+                     /label="oSL6632"
+                     /note="sequence: AGGTTCAGATTAAGGGTACAGGCT"
+     primer          complement(9310..9329)
+                     /label="oSL5993"
+                     /note="sequence: AGGTAAACTTGTCGCCATGGTATATCTCCTTATTAAAGGTTCAGATTAAGGGTACAGGCT"
+     primer          complement(9310..9330)
+                     /label="oSL6823"
+                     /note="sequence: TTAAAGGTCAGATTAAGGGTACAGGCT"
+     primer          complement(9311..9330)
+                     /label="oSL7918"
+                     /note="sequence: GCTATATCTCCTTATTAAAGGTCAGATTAAGGGTACAGGC"
+     primer          complement(9311..9330)
+                     /label="oSL1930"
+                     /note="sequence: AGATCCTTACTCGAGTCAGATTAAGGGTACAGGC"
+     misc_feature    9337..9337
+                     /label="MCS-1"
+     misc_feature    9338..9342
+                     /label="NcoI"
+     promoter        9343..9386
+                     /label="P1"
+     misc_feature    9350..9353
+                     /label=-33
+     misc_feature    9375..9382
+                     /label=-7
+     misc_feature    9387..9387
+                     /label="BamHI"
+     primer          complement(9392..9420)
+                     /label="oSL4499"
+                     /note="sequence: GATCCGTTATCAGCTACCTACTCGGCAGTTCACG"
+     primer          9393..9415
+                     /label="oSL1587"
+                     /note="sequence: ACTGCCGAGTAGGTAGCTGATAACTTCAGACTAAGGTTGATTTGCCTGCATTGGTGGTGAACTGCCGAGTAGGTAGCTG"
+     misc_feature    9393..9420
+                     /label="V. cholarae repeat"
+     primer          complement(9398..9420)
+                     /label="oSL2540"
+                     /note="sequence: TTCACTGCTCGCCGCCGCACACGCCGTGCACTTCTGCGTTATCAGCTACCTACTCGGCAG"
+     primer          complement(9399..9420)
+                     /label="oSL10167"
+                     /note="sequence: TCACCCCACCTACAGGACGGCTCACAACCACTCCTCGTTATCAGCTACCTACTCGGCA"
+     primer          complement(9399..9421)
+                     /label="oSL10159"
+                     /note="sequence: TCACCATACACCCGAGGTCTTCCTGGTTAAGCCCTTGTTATCAGCTACCTACTCGGCA"
+     primer          complement(9399..9421)
+                     /label="oSL10179"
+                     /note="sequence: TCACGCACAAAGGACACCGCAGCAGCACATCTGAGTGTTATCAGCTACCTACTCGGCA"
+     primer          complement(9401..9420)
+                     /label="oSL2716"
+                     /note="sequence: TTCACGGTTCTGTTGATATGCTCGACCAACTGGGCCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9420)
+                     /label="oSL3032"
+                     /note="sequence: TTCACGACTTGCTATGCAGCCGATAGACCGCGCAGCCGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9420)
+                     /label="oSL10157"
+                     /note="sequence: GTTCACCAGCCCTGAGCTCTCTGCGGCCTAATGTGGACGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9420)
+                     /label="oSL10177"
+                     /note="sequence: GTTCACGTTTGCAAGGAGCGGGAGAAAGGAACGGGAGGGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9420)
+                     /label="oSL3034"
+                     /note="sequence: TTCACGGTGACGTCGTTCGAGTGAACCAGATCGCGCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9420)
+                     /label="oSL10173"
+                     /note="sequence: CCCAGCACCAGCTCTCTGAGTAAAGCCATTCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9420)
+                     /label="oSL2529"
+                     /note="sequence: TTCACAGCCAACAAACAATGCTTTATGAATCCTCCCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9420)
+                     /label="oSL10165"
+                     /note="sequence: GTTCACTCGTAATTTGCTCCAATTTCTAGGGTCACCGAGTTATCAGCTACCTACTCGG"
+     primer          complement(9401..9423)
+                     /label="oSL2537"
+                     /note="sequence: TTCACCGCTTTAATGATGATTTCAGCCGCGCTGTACTGTTATCAGCTACCTACTCGG"
+     primer          complement(9404..9423)
+                     /label="oSL2533"
+                     /note="sequence: CAGTTCACCGCTTTAATGATGATTTCAGCCGCGCTGTACTGTTATCAGCTACCTACT"
+     misc_feature    9421..9452
+                     /label="replace_spacer"
+     misc_feature    complement(9422..9427)
+                     /label="BbsI"
+     misc_feature    9428..9445
+                     /label="Ext BbsI"
+     misc_feature    9446..9451
+                     /label="BbsI"
+     primer          9449..9469
+                     /label="oSL2541"
+                     /note="sequence: ATAACGTTGCACTCGGTCTATGTTGACCAGTGGGACTGTGAACTGCCGAGTAGG"
+     primer          9453..9475
+                     /label="oSL1587"
+                     /note="sequence: ACTGCCGAGTAGGTAGCTGATAACTTCAGACTAAGGTTGATTTGCCTGCATTGGTGGTGAACTGCCGAGTAGGTAGCTG"
+     misc_feature    9453..9480
+                     /label="V. cholarae repeat"
+     primer          9453..9481
+                     /label="oSL4498"
+                     /note="sequence: CTAGCGTGAACTGCCGAGTAGGTAGCTGATAACG"
+     primer          9453..9481
+                     /label="oSL1768"
+                     /note="sequence: GTTCCGTGAACTGCCGAGTAGGTAGCTGATAACG"
+     primer          9458..9481
+                     /label="oSL1764"
+                     /note="sequence: CTGCCGAGTAGGTAGCTGATAACG"
+     primer          complement(9458..9482)
+                     /label="oSL2540"
+                     /note="sequence: TTCACTGCTCGCCGCCGCACACGCCGTGCACTTCTGCGTTATCAGCTACCTACTCGGCAG"
+     primer          complement(9459..9480)
+                     /label="oSL10179"
+                     /note="sequence: TCACGCACAAAGGACACCGCAGCAGCACATCTGAGTGTTATCAGCTACCTACTCGGCA"
+     primer          complement(9459..9480)
+                     /label="oSL10159"
+                     /note="sequence: TCACCATACACCCGAGGTCTTCCTGGTTAAGCCCTTGTTATCAGCTACCTACTCGGCA"
+     primer          complement(9459..9481)
+                     /label="oSL10167"
+                     /note="sequence: TCACCCCACCTACAGGACGGCTCACAACCACTCCTCGTTATCAGCTACCTACTCGGCA"
+     misc_feature    complement(9460..9539)
+                     /label="self_targetting"
+     primer          complement(9461..9480)
+                     /label="oSL2716"
+                     /note="sequence: TTCACGGTTCTGTTGATATGCTCGACCAACTGGGCCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9480)
+                     /label="oSL10177"
+                     /note="sequence: GTTCACGTTTGCAAGGAGCGGGAGAAAGGAACGGGAGGGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9480)
+                     /label="oSL2537"
+                     /note="sequence: TTCACCGCTTTAATGATGATTTCAGCCGCGCTGTACTGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9480)
+                     /label="oSL2529"
+                     /note="sequence: TTCACAGCCAACAAACAATGCTTTATGAATCCTCCCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9480)
+                     /label="oSL10173"
+                     /note="sequence: CCCAGCACCAGCTCTCTGAGTAAAGCCATTCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9480)
+                     /label="oSL10165"
+                     /note="sequence: GTTCACTCGTAATTTGCTCCAATTTCTAGGGTCACCGAGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9480)
+                     /label="oSL3034"
+                     /note="sequence: TTCACGGTGACGTCGTTCGAGTGAACCAGATCGCGCAGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9481)
+                     /label="oSL3032"
+                     /note="sequence: TTCACGACTTGCTATGCAGCCGATAGACCGCGCAGCCGTTATCAGCTACCTACTCGG"
+     primer          complement(9461..9481)
+                     /label="oSL10157"
+                     /note="sequence: GTTCACCAGCCCTGAGCTCTCTGCGGCCTAATGTGGACGTTATCAGCTACCTACTCGG"
+     primer          complement(9464..9483)
+                     /label="oSL10175"
+                     /note="sequence: CAGTTCACCTGCAGCGCCCATGAAATTTTAATGCGGGAGCGTTATCAGCTACCTACT"
+     primer          complement(9464..9484)
+                     /label="oSL2887"
+                     /note="sequence: TTCACGCCCGAGTTTGTCAGAAAGCAGACCAAACAGCGTTATCAGCTACCTACT"
+     primer          9481..9503
+                     /label="oSL10552"
+                     /note="sequence: CAAACTGATGTTTGTGCTGCTGCCACCGCTGAGCAATA"
+     primer          9485..9504
+                     /label="oSL5320"
+                     /note="sequence: CTGCCACCGCTGAGCAATAA"
+     terminator      9548..9599
+                     /label="Terminator"
+     primer          complement(9605..9624)
+                     /label="oSL6683"
+                     /note="sequence: ACCGTCGACCAAGATAGGCA"
+     primer          9648..9676
+                     /label="oSL3387"
+                     /note="sequence: CGAGGGCGACACCCTGGTGAACCGCATCGAGCTGTTGATACAACCATAAAATGATAATTA"
+     primer          9648..9676
+                     /label="oSL3399"
+                     /note="sequence: CGAGGGCGACACCCTGGTGAACCGCATCGAGCTGTTGATACAACCATAAAATGATAATTA"
+     primer          9648..9702
+                     /label="oSL4955"
+                     /note="sequence: CACCTGTTGATACAACCATAAAATGATAATTACACCCATAAATTGATAATTATCACAC"
+     misc_feature    9649..9656
+                     /label="END"
+     primer          9649..9672
+                     /label="oSL2782"
+                     /note="sequence: CGGGTCTTGAGGGGTTTTTTGCTGAAACCTCAGGCATGTTGATACAACCATAAAATGATA"
+     primer          9649..9676
+                     /label="oSL3393"
+                     /note="sequence: CAGAGGCTGAAGCTGAAGGACGGCGGCCACTATGTTGATACAACCATAAAATGATAATTA"
+     misc_feature    9649..9676
+                     /label="Right flank"
+     primer          complement(9649..9676)
+                     /label="oSL6546"
+                     /note="sequence: TAATTATCATTTTATGGTTGTATCAACA"
+     primer          9649..9678
+                     /label="oSL5886"
+                     /note="sequence: AAGGTCCCCTCCACCCCACACATATGTGTTGATACAACCATAAAATGATAATTACA"
+     primer          9649..9678
+                     /label="oSL6270"
+                     /note="sequence: TCTTAAGGTCCCCTCCACCCCACACATATGTGTTGATACAACCATAAAATGATAATTACA"
+     primer          complement(9649..9678)
+                     /label="oSL3489"
+                     /note="sequence: TGTAATTATCATTTTATGGTTGTATCAACA"
+     primer          9649..9679
+                     /label="oSL4095"
+                     /note="sequence: CTTTGTTGATACAACCATAAAATGATAATTACAC"
+     primer          9649..9680
+                     /label="oSL4437"
+                     /note="sequence: TGTTGATACAACCATAAAATGATAATTACACC"
+     primer          9649..9681
+                     /label="oSL2136"
+                     /note="sequence: TTGATGATGGCCATGTTATCCTCCTCGTGTTGATACAACCATAAAATGATAATTACACCC"
+     primer          9649..9681
+                     /label="oSL2153"
+                     /note="sequence: TCCTATCCCATTACGGTCAATCCGCCGTGTTGATACAACCATAAAATGATAATTACACCC"
+     primer          9649..9682
+                     /label="oSL6545"
+                     /note="sequence: CCGGTGTTGATACAACCATAAAATGATAATTACACCCA"
+     misc_feature    9649..9705
+                     /label="57bp Right Transposon End (Truncated)"
+     primer          9649..9705
+                     /label="oSL4957"
+                     /note="sequence: TGTTGATACAACCATAAAATGATAATTACACCCATAAATTGATAATTATCACACCCA"
+     primer          9649..9705
+                     /label="oSL4959"
+                     /note="sequence: CCATGTTGATACAACCATAAAATGATAATTACACCCATAAATTGATAATTATCACACCCA"
+     primer          complement(9649..9705)
+                     /label="oSL4956"
+                     /note="sequence: TGGGTGTGATAATTATCAATTTATGGGTGTAATTATCATTTTATGGTTGTATCAACA"
+     primer          complement(9649..9705)
+                     /label="oSL4960"
+                     /note="sequence: CATGGGTGTGATAATTATCAATTTATGGGTGTAATTATCATTTTATGGTTGTATCAACA"
+     misc_feature    9650..9655
+                     /label="mutate for NGS purposes"
+     primer          9650..9679
+                     /label="oSL2093"
+                     /note="sequence: GTTGATACAACCATAAAATGATAATTACAC"
+     primer          9650..9701
+                     /label="oSL6210"
+                     /note="sequence: GTTGATACAACCATAAAATGATAATTACACCCATAAATTGATAATTATCACA"
+     primer          complement(9651..9705)
+                     /label="oSL4958"
+                     /note="sequence: ACCATGGGTGTGATAATTATCAATTTATGGGTGTAATTATCATTTTATGGTTGTATCAA"
+     primer          9656..9680
+                     /label="oSL2545"
+                     /note="sequence: TAAACGGGTCTTGAGGGGTTTTTTGCTGAAACCTCAGGTGTTGGAACAACCATAAAATGATAATTACACC"
+     primer          9656..9681
+                     /label="oSL3364"
+                     /note="sequence: GAACAACCATAAAATGATAATTACACCC"
+     primer          9656..9681
+                     /label="oSL4714"
+                     /note="sequence: ACAACCATAAAATGATAATTACACCC"
+     primer          9656..9689
+                     /label="oSL4052"
+                     /note="sequence: GCTTTGTTGGAACAACCATAAAATGATAATTACACCCATAAATTG"
+     misc_feature    complement(9657..9676)
+                     /label="TnsB_1?"
+     primer          complement(9660..9685)
+                     /label="oSL6195"
+                     /note="sequence: AGTGGTAATTATCAAATTATGGGTGTAATTATCATTTTATGG"
+     primer          complement(9660..9699)
+                     /label="oSL10570"
+                     /note="sequence: TGATAATTATCAATTTATGGGTGTAATTATCATTTTATGG"
+     misc_feature    complement(9677..9696)
+                     /label="TnsB_2?"
+     primer          complement(9677..9703)
+                     /label="oSL7160"
+                     /note="sequence: GACTGGAGTTCAGACGTGTGCTCTTCCGATCTGGTGTGATAATTATCAATTTATGGGTG"
+     primer          9677..9705
+                     /label="oSL7854"
+                     /note="sequence: CACCCATAAATTGATAATTATCACACCCA"
+     primer          complement(9677..9705)
+                     /label="oSL6547"
+                     /note="sequence: TGGCTTATGGGTGTGATAATTATCAATTTATGGGTG"
+     primer          complement(9677..9705)
+                     /label="oSL6207"
+                     /note="sequence: GATCAGAGCGTTATAGTTAAATTGGGTGTGATAATTATCAATTTATGGGTG"
+     primer          complement(9677..9705)
+                     /label="oSL7853"
+                     /note="sequence: CAAGCAGAAGACGGCATACGAGATTCGCCTTATGGGTGTGATAATTATCAATTTATGGGTG"
+     primer          complement(9677..9705)
+                     /label="oSL8101"
+                     /note="sequence: GAGTTCAGACGTGTGCTCTTCCGATCTTGGGTGTGATAATTATCAATTTATGGGTG"
+     primer          complement(9677..9705)
+                     /label="oSL10067"
+                     /note="sequence: AATGATACGGCGACCACCGAGATCTACACTAGATCGCACACTCTTTCCCTACACGACGCTCTTCCGATCTTGGGTGTGATAATTATCAATTTATGGGTG"
+     primer          complement(9677..9705)
+                     /label="oSL7851"
+                     /note="sequence: TGGGTGTGATAATTATCAATTTATGGGTG"
+     primer          complement(9679..9704)
+                     /label="oSL1172"
+                     /note="sequence: GGGTGTGATAATTATCAATTTATGGG"
+     primer          complement(9680..9704)
+                     /label="oSL3446"
+                     /note="sequence: TACATTGAGCAACTGACTGCGTACGGGGTGTGATAATTATCAATTTATGG"
+     primer          complement(9680..9705)
+                     /label="oSL2915"
+                     /note="sequence: ATATGGCTCATGGTATATCTCCTTTGGGTGTGATAATTATCAATTTATGG"
+     primer          complement(9681..9705)
+                     /label="oSL7805"
+                     /note="sequence: TGCTTCGAAGACACGATCTGGGTGTGATAATTATCAATTTATG"
+     primer          complement(9681..9705)
+                     /label="oSL6535"
+                     /note="sequence: TCGAGCGTCCTGATCTGGGTGTGATAATTATCAATTTATG"
+     primer          complement(9681..9705)
+                     /label="oSL6274"
+                     /note="sequence: CAGAGCGTTATAGTTAAATTGGGTGTGATAATTATCAATTTATG"
+     primer          complement(9681..9707)
+                     /label="oSL4442"
+                     /note="sequence: CATGACTTAAGTGGGTGTGATAATTATCAATTTATG"
+     primer          9688..9712
+                     /label="oSL5506"
+                     /note="sequence: TCATGAAGAGGTCATTTCCTAGGTT"
+     promoter        9711..9789
+                     /label="PcfxA"
+     misc_feature    9754..9757
+                     /label=-33
+     primer          complement(9757..9788)
+                     /label="oSL10068"
+                     /note="sequence: CGACAAAGGTACATAACTAAAGTTTCCCACCC"
+     primer          complement(9757..9790)
+                     /label="oSL10057"
+                     /note="sequence: GCCGACAAAGGTACATAACTAAAGTTTCCCACCC"
+     misc_feature    9778..9785
+                     /label=-7
+     misc_feature    9790..9790
+                     /label=+1
+     CDS             9833..10912
+                     /label="TetX1"
+     primer          10434..10453
+                     /label="oSL10787"
+                     /note="sequence: gaatgttaacttacggtgtc"
+     primer          10922..10944
+                     /label="oSL2914"
+                     /note="sequence: ATTCATGAGCGGATACATATTTGAATGGGCAGTTATTGGTGCCCTTCTAG"
+     primer          complement(10922..10945)
+                     /label="oSL0744"
+                     /note="sequence: GAGTCTAGAAGGGCACCAATAACTGCC"
+     primer          complement(10926..10947)
+                     /label="oSL7214"
+                     /note="sequence: GACAAGGGCGAGGAGGATACTCTAGAAGGGCACCAATAAC"
+     primer          10928..10948
+                     /label="oSL6542"
+                     /note="sequence: GTGTACTCAAATAATAAAAATTTACTTATGTATATACGCAACTTAATATTGGTGCCCTTCTAGAGTC"
+     primer          10937..10958
+                     /label="oSL1856"
+                     /note="sequence: GCATGGAGCCGGGCCACCTCGACCTGAATGGAAGCCTTCTAGAGTCCTTACTGCAG"
+     primer          10940..10966
+                     /label="oSL3108"
+                     /note="sequence: GACTTGCAATGGCCTTCAGTCTAGAGTCCTTACTGCAGTAGTTTTG"
+     misc_feature    10941..10945
+                     /label="XbaI"
+     primer          10946..10966
+                     /label="oSL3095"
+                     /note="sequence: CATGGATCCGTCCTTACTGCAGTAGTTTTG"
+     primer          10948..10977
+                     /label="oSL2187"
+                     /note="sequence: GCACCGTGGGCTTGTACTCGGTCATGGTGGCCTTACTGCAGTAGTTTTGCTGAAATACTC"
+     primer          10949..10969
+                     /label="oSL0750"
+                     /note="sequence: CTTACTGCAGTAGTTTTGCTG"
+     primer          complement(10949..10969)
+                     /label="oSL0749"
+                     /note="sequence: CAGCAAAACTACTGCAGTAAG"
+     primer          10949..10977
+                     /label="oSL1918"
+                     /note="sequence: CTTACTGCAGTAGTTTTGCTGAAATACTC"
+     misc_feature    complement(10949..11093)
+                     /label="150bp Left Flank"
+     primer          complement(10975..10998)
+                     /label="oSL3192"
+                     /note="sequence: AAGTTGATATTTTTGTGAATCGAG"
+     misc_feature    10986..11005
+                     /label="TnsB_3?"
+     misc_feature    11012..11031
+                     /label="TnsB_2?"
+     primer          11025..11048
+                     /label="oSL1497"
+                     /note="sequence: ATGGTTGTTTTGTGGTTAAGTTGC"
+     primer          11026..11050
+                     /label="oSL1099"
+                     /note="sequence: ACACTCTTTCCCTACACGACGCTCTTCCGATCTGGTTGTTTTGTGGTTAAGTTGCTG"
+     primer          11026..11050
+                     /label="oSL1101"
+                     /note="sequence: GACTGGAGTTCAGACGTGTGCTCTTCCGATCTGGTTGTTTTGTGGTTAAGTTGCTG"
+     primer          11027..11048
+                     /label="oSL5348"
+                     /note="sequence: GGTTGTTTTGTGGTTAAGTTGC"
+     primer          complement(11027..11048)
+                     /label="oSL5973"
+                     /note="sequence: GCAACTTAACCACAAAACAACC"
+     primer          11027..11049
+                     /label="oSL7478"
+                     /note="sequence: GGTTGTTTTGTGGTTAAGTTGCT"
+     primer          11027..11049
+                     /label="oSL2577"
+                     /note="sequence: GGTTGTTTTGTGGTTAAGTTGCT"
+     primer          11027..11050
+                     /label="oSL1185"
+                     /note="sequence: GGTTGTTTTGTGGTTAAGTTGCTG"
+     primer          11028..11057
+                     /label="oSL5626"
+                     /note="sequence: GTTGTTTTGTGGTTAAGTTGCTGATTATAA"
+     primer          complement(11062..11093)
+                     /label="oSL2135"
+                     /note="sequence: GGAAGTGGCTCCGGAAGCAAGGGCGAGGTGTTGATGCAACCATAAAGTGATATTTAATAA"
+     primer          complement(11062..11094)
+                     /label="oSL2154"
+                     /note="sequence: CATGGTGGCAAGCTTCGGCGGGAACAAATGTTGATGCAACCATAAAGTGATATTTAATAA"
+     primer          complement(11063..11093)
+                     /label="oSL4096"
+                     /note="sequence: ACCTGTTGATGCAACCATAAAGTGATATTTAATA"
+     primer          11064..11089
+                     /label="oSL3490"
+                     /note="sequence: ATTAAATATCACTTTATGGTTGCATC"
+     primer          11065..11089
+                     /label="oSL2555"
+                     /note="sequence: TTAAATATCACTTTATGGTTGCATC"
+     misc_feature    11066..11085
+                     /label="TnsB_1?"
+     misc_feature    11066..11093
+                     /label="Left flank"
+     primer          11071..11093
+                     /label="oSL5349"
+                     /note="sequence: ATCACTTTATGGTTGCATCAACA"
+     primer          complement(11073..11093)
+                     /label="oSL5885"
+                     /note="sequence: TGTTTAAAGATCTGGCCATCTAGATCGCCCCACCATATGTGTTGATGCAACCATAAAGTG"
+     primer          complement(11073..11093)
+                     /label="oSL3050"
+                     /note="sequence: GTACCTGTTGATGCAACCATAAAGTG"
+     primer          complement(11073..11093)
+                     /label="oSL2781"
+                     /note="sequence: TGTAAAACGACGGCCAGTGAATTCGAGCTCGGTACCTGTTGATGCAACCATAAAGTG"
+     primer          complement(11073..11093)
+                     /label="oSL5640"
+                     /note="sequence: CAATCCTGTCCCTAGTAAAGCTTGTTGATGCAACCATAAAGTG"
+     primer          complement(11073..11093)
+                     /label="oSL3197"
+                     /note="sequence: CCCCGCGCGTTGGCCGATTCATTAATGCAGCCCAAGCTTTGTTGATGCAACCATAAAGTG"
+     primer          complement(11073..11094)
+                     /label="oSL2777"
+                     /note="sequence: GCGCAGCGAGTCAGTGAGCGAGGATGTTGATGCAACCATAAAGTG"
+     primer          complement(11074..11093)
+                     /label="oSL3394"
+                     /note="sequence: GGGCTTCTTGGCCTTGTAGGTGGTCTTGACCTCGGCGTCGTGTTGATGCAACCATAAAGT"
+     primer          complement(11074..11093)
+                     /label="oSL4036"
+                     /note="sequence: CCAGTTGGATTCCGTTATTGGAGAAACCCAGGTGCCTGGGGTCCAGGTATAATATCTAAGTGTTGATGCAACCATAAAGT"
+     primer          complement(11074..11095)
+                     /label="oSL3388"
+                     /note="sequence: CAGGATGTTGCCGTCCTCCTTGAAGTCGATGCCCTTCATGTTGATGCAACCATAAAGT"
+     primer          complement(11074..11095)
+                     /label="oSL3400"
+                     /note="sequence: GATGTTGCCGTCCTCCTTGAAGTCGATGCCCTTCATGTTGATGCAACCATAAAGT"
+     misc_feature    complement(11086..11093)
+                     /label="END"
+     misc_feature    11087..11092
+                     /label="mutate for NGS purpose"
+     primer          11094..11113
+                     /label="oSL4342"
+                     /note="sequence: tgcttcggggtcattatagc"
+     primer          11094..11113
+                     /label="oSL4342"
+                     /note="sequence: TGCTTCGGGGTCATTATAGC"
+     misc_feature    11094..11861
+                     /label="From pQexp"
+     primer          complement(11106..11133)
+                     /label="oSL7741"
+                     /note="sequence: ATGGATATACCGAAAAAATCGCTATAAT"
+     primer          complement(11123..11144)
+                     /label="oSL4341"
+                     /note="sequence: TGCGAAAAAGGATGGATATACC"
+     oriT            complement(11174..11319)
+                     /label="incP origin of transfer"
+     CDS             11352..11723
+                     /label="traJ"
+     primer          complement(11496..11515)
+                     /label="oSL5507"
+                     /note="sequence: ACGACGCCCGTGATTTTGTA"
+     primer          complement(11844..11903)
+                     /label="oSL4343"
+                     /note="sequence: ACATTTATTTTTCAGAGAGGAAAGAGAGACAACCGCGGTGGCTTTCACACCGGATCGGTC"
+     misc_feature    11866..11880
+                     /label="PCR1_erm_tet_switch_F"
+     primer          11866..11880
+                     /label="oSL5761"
+                     /note="sequence: CCGCGGTTGTCTCTC"
+     misc_feature    11866..12861
+                     /label="pVAL-1"
+     CDS             11984..12784
+                     /label="ermF CDS"
+     gene            11984..12784
+                     /label="ermF gene"
+     misc_feature    12847..12861
+                     /label="PCR1_tet_erm_switch"
+     primer          complement(12847..12861)
+                     /label="oSL5762"
+                     /note="sequence: GCCAGCCGTTATGCG"
+     misc_feature    12862..14608
+                     /label="pBluescript II SK(-)"
+     primer          complement(12903..12922)
+                     /label="oSL3776"
+                     /note="sequence: ACCGCCGCCTTCTATGAAAGGTTGGGCTTCGGAATCGTTTTGACCATGATTACGCCAAGC"
+     primer          complement(12915..12936)
+                     /label="oSL3750"
+                     /note="sequence: TGACAGCTAGCTCAGTCCTAGGTATAATACTAGCGTCGACAGGAAACAGCTATGACCATG"
+     primer          complement(12921..12941)
+                     /label="oSL5283"
+                     /note="sequence: ATGAGATTATCAGCTTTCGTTTGTCGGTGAACTGTTCACACAGGAAACAGCTATG"
+     CDS             complement(12956..13544)
+                     /label="Ori_e.coli"
+     CDS             complement(12956..13544)
+                     /label="Translation 13544-12956"
+                     /translation="LRSFFSARNLLLANKKTTATSGGLFAGSRATNSFSEGNWLQQSADTKYCPSSVAVVRPPLQELCSTAYIPRSANPVTSGCCQWR*VVSYRVGLKTIVTG*GAAVGLNGGFVHTAQLGANDLHRTEIPTA*AMRKRHASRREKGGQVSGKRQGRNRRAHEGASRGKRLVSL*SCRVSPPLT*ASIFVMLVRGAEPME"
+     primer          13154..13177
+                     /label="oSL3112"
+                     /note="sequence: CTCACGCTGTAGGTATCTCAGTTC"
+     primer          complement(13314..13335)
+                     /label="oSL3113"
+                     /note="sequence: TCGCTCTGCTAATCCTGTTACC"
+     primer          13608..13636
+                     /label="oSL8442"
+                     /note="sequence: GGCACTTTTCGGGGAAATGTGACAGTTACCAATGCTTAATCAGTGAGG"
+     primer          13613..13634
+                     /label="oSL5029"
+                     /note="sequence: GTTATGCTAGTTATTGCTCAGCGGTGGCAGCAGCCTAGGTTACCAATGCTTAATCAGTGA"
+     CDS             complement(13614..14474)
+                     /label="bla CDS"
+     gene            complement(13614..14474)
+                     /label="bla gene"
+     primer          13665..13686
+                     /label="oSL8117"
+                     /note="sequence: TTCATCCATAGTTGCCTGACTC"
+     primer          13701..13720
+                     /label="oSL2121"
+                     /note="sequence: AACTACGATACGGGAGGGCT"
+     primer          13702..13721
+                     /label="oSL7109"
+                     /note="sequence: ACTACGATACGGGAGGGCTT"
+     primer          complement(13738..13757)
+                     /label="oSL7281"
+                     /note="sequence: GTGAGCGTGGCTCTCGCGGTATCATTGCAGC"
+     primer          complement(13835..13854)
+                     /label="oSL8116"
+                     /note="sequence: CTGGATGGAGGCGGATAAAG"
+     primer          13992..14013
+                     /label="oSL10560"
+                     /note="sequence: ATCAAGGCGAGTTACATGATCC"
+     primer          13993..14013
+                     /label="oSL8115"
+                     /note="sequence: TCAAGGCGAGTTACATGATCC"
+     primer          14014..14033
+                     /label="oSL10260"
+                     /note="sequence: tacccatgttgtgcaaaaaagc"
+     primer          complement(14034..14055)
+                     /label="oSL10674"
+                     /note="sequence: CGGAGGACCGAAGGAGCTAACC"
+     primer          complement(14040..14062)
+                     /label="oSL10673"
+                     /note="sequence: CAACGATCGGAGGACCGAAGGAG"
+     primer          complement(14122..14142)
+                     /label="oSL8114"
+                     /note="sequence: TACGGATGGCATGACAGTAAG"
+     primer          14132..14151
+                     /label="oSL8130"
+                     /note="sequence: TGCCATCCGTAAGATGCTTT"
+     primer          complement(14237..14256)
+                     /label="oSL8131"
+                     /note="sequence: GCTATGTGGCGCGGTATTAT"
+     primer          complement(14454..14474)
+                     /label="oSL5028"
+                     /note="sequence: AATAATTTTGTTTAACTTTAATAAGGAGATATACCATGGATGAGTATTCAACATTTCCGT"
+     primer          14500..14524
+                     /label="oSL2071"
+                     /note="sequence: AGCATTTATCAGGGTTATTGTCTCA"
+     primer          14538..14557
+                     /label="oSL10203"
+                     /note="sequence: GTTTTCCCAGTCACGACGTT"
+     primer          14547..14567
+                     /label="oSL8187"
+                     /note="sequence: AAACGTCACGACGTTGTAAAACGAC"
+     primer          complement(14571..14615)
+                     /label="oSL7110"
+                     /note="sequence: GTACCCAATTCGCCCTATAGTGAGTCGTATTACGCGCGCTCACTG"
+     primer          14581..14602
+                     /label="oSL6171"
+                     /note="sequence: GCGTAATACGACTCACTATAGG"
+     primer          complement(14583..14603)
+                     /label="oSL2547"
+                     /note="sequence: TAGGAATTGTTATCCGCTCACAATTCCCCTATAGTGAGTCGTATTAC"
+     primer          complement(14583..14603)
+                     /label="oSL2563"
+                     /note="sequence: CTAATAGGAATTGTTATCCGCTCACAATTCCCCTATAGTGAGTCGTATTAC"
+     primer          14591..14615
+                     /label="oSL7111"
+                     /note="sequence: ACTCACTATAGGGCGAATTGGGTAC"
+     misc_feature    14597..14685
+                     /label="CUT_SITE_WGS"
+     misc_feature    14611..459
+                     /label="pVAL-1"
+     CDS             complement(14647..15711)
+                     /label="rep CDS"
+     gene            complement(14647..15711)
+                     /label="rep gene"
+     primer          15387..15406
+                     /label="oSL5725"
+                     /note="sequence: CTGCCAAAGAATCGAGTGCG"
+     primer          complement(15496..15515)
+                     /label="oSL5726"
+                     /note="sequence: ATTATGCAGGCACGAAACGC"
+ORIGIN
+        1 ACACATGTTC TAATCCCTTT ATTTATGGGC GTTTGCGAAG AAGTGATAGA GCATATTACA
+       61 GACGATGCTT ATAACAGACA AGGGGAATTT ATAGAGCTAA GTGGTTGATT TACTGTCGGA
+      121 AAAAGAAAAA CGATAGGGAA AAAGAGCAAA GCAAAACCAA CCAACGGGCG GTAGGATTGG
+      181 AAACGGGTTT TTATGGCGTG TACACGTTTG TGTACAAAAT GTTTGTATTT TATTGAAATA
+      241 TAGCTATCTT TGTGCTGAAT TTAAAAGCAA ACAGATATGG AAGCATTATC AGTAAGAGAA
+      301 TACCGTAACA ACCTCGCAGC GTCTTTCACC AAAGCTGACA ATGGCGAGCA GGTACTAATT
+      361 CGCAGGAAAA ACGAGATTTA CGCTTTGGTA AAAGTTGGTC GTGAAGATTT GATGATAACC
+      421 CCGGAGCTGC AAGCAAGGAT TGACAAGGCA AGGGAAGAAC TCGAGTGATC TGGAAGAAGC
+      481 AATGAAAGCT GCTGTTAAGT CTCCGAATCA GGTATTGTTC CTGACAGGTG TATTCCCATC
+      541 CGGTAAACGC GGATACTTTG CAGTTGATCT GACTCAGGAA TAAATTATAA ATTAAGGTAA
+      601 GAAGATTGTA GGATAAGCTA ATGAAATAGA AAAAGGATGC CGTCACACAA CTTGTCGGCA
+      661 TTCTTTTTTG TTTTATTAGT TGAAAATATA GTGAAAAAGT TGCCTAAATA TGTATGTTAA
+      721 CAAATTATTT GTCGTAACTT TGCACTCCGC GGCCGCATTT TAAAATAAAA TAAATAATTT
+      781 ACTTAATTAA ACGAATATGG CGACAAGTTT ACCTACGCCC TCAGCAATTA CGACTTCGGC
+      841 GTTAGAGTAT GCATTCCATA CTCCCGCTCG CAATCTAACG AAATCTCGCG GAAAAAACAT
+      901 TCATCGTTAT GTCAGTGTAA AGATGAGTAA GAGGATTACG GTAGAATCTA CTCTAGAGTG
+      961 TGATGCCTGC TATCACTTTG ATTTTGAGCC AAGTATTGTT CGCTTTTGCG CTCAACCGAT
+     1021 TCGATTTTTA TATTATCTCA ATGGTCAGTC TCACTCCTAT GTTCCTGACT TTCTAGTTCA
+     1081 ATTTGATACC AACGAGTTTG TTCTATATGA AGTAAAGTCA GCTTATGCTA AGAACAAACC
+     1141 TGATTTTGAT GTTGAATGGG AGGCGAAAGT AAAAGCAGCA ACTGAACTAG GGCTAGAATT
+     1201 GGAGCTTGTT GAAGAGAGTG ATATTAGGGA TACGGTTGTA TTAAATAATC TTAAGCGCAT
+     1261 GCATCGTTAT GCTTCGAAAG ATGAGCTGAA TAACGTACAT AACTCTCTCT TAAAAATAAT
+     1321 AAAGTACAAT GGCGCCCAAT CTGCAAGATG CTTGGGAGAA CAGTTGGGTT TAAAAGGCCG
+     1381 AACTGTTTTA CCAATTTTGT GCGATTTGCT GTCAAGGTGT TTACTCGATA CACGTTTGGA
+     1441 TAAGCCTCTA TCTCTTGAAT CTCGATTTGA GTTGGCCAGT TACGGATAGG CGCGCCGCAT
+     1501 TTTAAAATAA AATAAATGAT ATAATTAATT AAACGAATAT GGCTAAGAAA GGGTTCTCAA
+     1561 GTTTCCATAG AAAAGCAGTC TCTTCCCAAG ATACGCTTGA ATCGATAGAG CTTGTCTCTA
+     1621 GCGCTAATTG TCTAGAAAGT GTTACGTATC AAGATATATC AGCATTTCCC GAAACAATTG
+     1681 CGGTAGAGAT TAATTTCCGA TTAAGCATTC TTCGCTTTTT AGCGCGAAAG TGCGAAACCA
+     1741 TTGTGGCCAA ATCAATTGAA CCACATCGTG TAGAGCTACA GCAAAACTAT AGTAGAAAAA
+     1801 TACCCAGTGC AATAACGATA TATCGATGGT GGCTTGCTTT TCGAAAATCA GACTACAACC
+     1861 CCATTAGCTT AGCACCTAAT ATCAAGGATA GAGGTAATAG AGAGACAAAA GTGTCAACAG
+     1921 TTGTTGATTC TATTATGGAA CAGGCAGTTG AAAGAGTTAT ATCTGGACGA AAAGTCAATG
+     1981 TTAGCTCTGC ATATAAACGT GTTCGACGAA AAGTTCGTCA ATACAATCTA ACTCATGGAA
+     2041 CGAAATACAC GTATCCTAAG TACGAATCTG TAAGAAAGCG AGTAAAAAAG AAAACCCCAT
+     2101 TTGAGTTATT AGCCGCAGGG AAAGGGGAGA GAGTAGCTAA GAGAGAGTTT CGCCGAATGG
+     2161 GAAAAAAGAT CCTCACGTCT AGCGTGCTAG AGAGGGTTGA AATAGATCAC ACTGTCGTTG
+     2221 ACCTTTTTGC AGTACACGAA GAGTATCGAA TCCCATTGGG CCGACCTTGG CTTACTCAAT
+     2281 TGGTTGATTG TTACAGTAAA GCTGTAATCG GTTTTTATTT AGGTTTCGAG CCTCCTAGCT
+     2341 ATGTGTCGGT TTCCCTTGCA CTTAAGAATG CAATACAACG CAAAGATGAC TTAATCTCCT
+     2401 CGTATGAATC GATCGAGAAT GAATGGCTAT GTTATGGCAT CCCAGACCTA CTCGTAACTG
+     2461 ATAATGGTAA AGAGTTTTTG TCGAAAGCAT TTGATCAAGC ATGTGAATCA CTATTGATCA
+     2521 ATGTGCATCA AAATAAAGTT GAGACGCCCG ACAACAAACC TCATGTTGAA CGTAACTACG
+     2581 GGACTATTAA TACTTCTCTG TTAGACGATT TACCTGGGAA ATCCTTCAGC CAGTACCTTC
+     2641 AAAGAGAAGG GTACGACTCT GTGGGAGAAG CTACCCTTAC ACTCAATGAG ATTAGAGAAA
+     2701 TTTACTTAAT TTGGTTGGTG GATATTTATC ATAAAAAACC CAATCAGAGA GGCACTAATT
+     2761 GTCCTAATGT TGCGTGGAAA AAGGGTTGTC AAGAATGGGA ACCAGAGGAG TTCTCTGGTT
+     2821 CTAAAGACGA ATTAGACTTT AAATTTGCTA TTGTTGATTA CAAACAACTT ACTAAAGTAG
+     2881 GGATAACTGT CTACAAAGAA CTGAGTTATA GCAATGACCG TTTAGCTGAA TATAGAGGGA
+     2941 AGAAAGGAAA CCATAAAGTT CAGTTCAAGT ATAACCCTGA GTGTATGGCA GTTATTTGGG
+     3001 TGTTGGATGA GGATATGAAT GAGTACTTTA CAGTTAATGC GATTGACTAC GAATATGCAA
+     3061 GTAGAGTATC ACTTTGGCAA CATAAATATA ACATGAAATA TCAAGCAGAA CTAAATTCAG
+     3121 CAGAATATGA TGAGGACAAG GAAATTGATG CAGAAATAAA AATTGAAGAA ATCGCAGATC
+     3181 GTTCAATTGT TAAGACTAAC AAAATCAGAG CTCGGAGGCG TGGCGCTAGG CATCAAGAGA
+     3241 ATAGCGCAAG GGCTAAGTCA ATCAGTAATG CGAACCCGGC CTCGATACAA AAACATGAAG
+     3301 ATGAAATCGT TAGTGCAGAT AATGACGATT GGGATATTGA TTATGTCTGA CCGGTCGCAT
+     3361 TTTAAAATAA AATAAATAAT ATAATTAATT AAACGAATAT GAGTGAAACG CGTGAGGCTC
+     3421 GTATATCAAG AGCTAAAAGG GCATTTGTAT CCACACCGAG CGTTAGGAAA ATCTTGAGTT
+     3481 ACATGGATAG ATGTAGAGAT CTATCAGACC TAGAGTCTGA GCCTACATGC ATGATGGTCT
+     3541 ATGGTGCTTC GGGTGTAGGT AAAACGACCG TCATCAAGAA ATACTTAAAT CAAAACAGAA
+     3601 GAGAGTCCGA AGCCGGGGGC GATATAATAC CTGTTTTGCA TATTGAGTTG CCAGACAATG
+     3661 CGAAGCCAGT AGATGCAGCA AGGGAATTGC TGGTTGAAAT GGGTGACCCG CTAGCACTTT
+     3721 ATGAAACTGA CTTAGCTAGA TTGACGAAAA GACTGACTGA ATTAATCCCT GCGGTCGGCG
+     3781 TGAAGCTGAT TATTATCGAT GAGTTCCAAC ATTTGGTGGA AGAAAGGTCA AATCGGGTTC
+     3841 TTACCCAAGT AGGTAATTGG CTAAAAATGA TACTTAACAA AACGAAATGT CCAATTGTTA
+     3901 TATTTGGTAT GCCATACTCA AAAGTTGTAC TGCAAGCAAA CTCGCAACTT CACGGGCGAT
+     3961 TTTCCATTCA GGTTGAACTG CGCCCCTTTA GCTACCAGGG AGGTAGAGGT GTATTTAAAA
+     4021 CTTTTTTGGA ATACCTTGAT AAAGCCCTAC CTTTTGAAAA ACAGGCTGGC TTAGCCAACG
+     4081 AAAGTTTGCA GAAAAAATTG TATGCATTCT CTCAGGGAAA CATGCGTTCG TTGAGAAACC
+     4141 TTATTTATCA AGCATCTATC GAAGCAATTG ATAATCAGCA TGAGACGATA ACCGAAGAAG
+     4201 ATTTCGTTTT TGCATCGAAG TTGACATCGG GCGATAAACC CAACTCATGG AAAAATCCTT
+     4261 TTGAGGAGGG TGTTGAGGTA ACAGAAGATA TGTTACGACC GCCACCAAAA GATATTGGTT
+     4321 GGGAGGACTA TTTGAGACAT TCAACCCCGA GAGTGAGTAA ACCAGGTAGA AATAAAAACT
+     4381 TTTTCGAATA ACGTACGCAT TTTAAAATAA AATAAATAAT TTACTTAATT AAACGAATAT
+     4441 GTTTTTGCAA AGACCTAAAC CTTACAGCGA TGAAAGTTTA GAAAGTTTCT TTATCCGAGT
+     4501 GGCTAACAAA AATGGCTACG GTGATGTCCA TCGCTTCCTA GAAGCCACTA AACGATTCCT
+     4561 TCAAGACATT GACCATAATG GCTATCAAAC CTTTCCGACT GATATAACTC GGATAAACCC
+     4621 ATACTCAGCT AAAAACAGTT CCAGCGCACG AACTGCGTCA TTCCTGAAAC TTGCACAATT
+     4681 GACATTTAAT GAACCGCCAG AGCTACTTGG GTTGGCAATT AACAGAACAA ACATGAAATA
+     4741 CTCGCCGTCA ACTAGCGCGG TTGTTAGAGG TGCAGAAGTC TTTCCTCGCA GTTTACTACG
+     4801 GACGCACTCC ATCCCCTGCT GTCCTTTGTG TCTGCGAGAA AATGGCTACG CCTCCTACCT
+     4861 TTGGCACTTT CAGGGGTACG AATACTGCCA CAGCCATAAC GTACCTTTAA TTACCACTTG
+     4921 TAGCTGTGGT AAGGAGTTTG ACTACCGAGT ATCTGGGTTA AAGGGCATTT GCTGCAAATG
+     4981 CAAGGAGCCT ATCACCTTAA CCAGCAGGGA GAACGGTCAT GAGGCAGCGT GTACTGTTTC
+     5041 AAACTGGCTT GCTGGCCATG AATCTAAACC TCTGCCAAAT CTTCCTAAAA GCTACCGATG
+     5101 GGGTTTAGTT CATTGGTGGA TGGGTATTAA AGATAGCGAG TTCGATCACT TTTCGTTCGT
+     5161 TCAATTTTTC TCAAACTGGC CAAGGTCATT CCACTCGATA ATCGAAGATG AAGTAGAGTT
+     5221 CAACCTTGAG CATGCTGTTG TCAGCACGTC TGAATTACGA CTAAAAGATC TTCTTGGTCG
+     5281 ATTGTTTTTC GGTTCAATTC GGTTACCTGA GCGGAATCTT CAACACAATA TCATCCTTGG
+     5341 TGAGCTTCTC TGCTATTTAG AAAATCGTTT ATGGCAAGAC AAGGGATTAA TCGCCAACCT
+     5401 CAAAATGAAC GCGTTAGAGG CGACTGTAAT GTTAAATTGT AGCCTCGATC AGATTGCATC
+     5461 AATGGTTGAA CAACGCATCT TGAAGCCAAA TCGAAAAAGC AAGCCCAACA GCCCTCTTGA
+     5521 TGTTACCGAT TATCTATTTC ATTTCGGCGA TATTTTCTGT CTTTGGTTAG CTGAGTTCCA
+     5581 AAGCGATGAG TTTAACCGTT CGTTTTATGT GTCGAGGTGG TAACCCGGGC GCATTTTAAA
+     5641 ATAAAATAAA TGATATAATT AATTAAACGA ATATGCAAAC TCTGAAAGAA CTAATCGCAT
+     5701 CCAATCCTGA CGACTTAACA ACTGAACTTA AGAGAGCATT TCGTCCACTC ACACCGCATA
+     5761 TTGCAATTGA TGGTAATGAA CTTGACGCAC TGACGATATT AGTCAATTTA ACCGATAAGA
+     5821 CTGATGATCA GAAAGACCTG CTCGATCGAG CCAAATGCAA GCAAAAACTT CGAGATGAAA
+     5881 AATGGTGGGC TAGCTGCATA AATTGCGTTA ATTACAGACA AAGCCATAAC CCAAAATTCC
+     5941 CGGATATACG TTCTGAAGGC GTGATTCGAA CCCAAGCCCT GGGTGAATTA CCGAGTTTCC
+     6001 TACTCTCGTC CTCAAAAATC CCACCATACC ATTGGTCATA TAGCCATGAT TCAAAATACG
+     6061 TCAACAAAAG CGCATTCCTC ACCAATGAGT TTTGTTGGGA TGGTGAGATC TCATGTTTGG
+     6121 GTGAGCTTCT TAAAGATGCA GATCACCCAC TTTGGAATAC TTTGAAAAAG TTAGGTTGTT
+     6181 CTCAAAAAAC TTGCAAAGCA ATGGCAAAAC AACTAGCTGA TATTACTCTC ACGACTATCA
+     6241 ATGTCACACT CGCACCAAAT TACCTGACTC AAATATCTCT CCCCGATAGT GATACATCCT
+     6301 ACATTTCACT CTCTCCTGTT GCATCGCTAT CGATGCAAAG CCACTTTCAT CAGAGGCTCC
+     6361 AAGATGAAAA TCGGCATAGC GCGATAACGC GGTTTAGCCG AACTACCAAC ATGGGGGTCA
+     6421 CTGCGATGAC ATGTGGCGGC GCATTTAGAA TGTTAAAGTC TGGCGCTAAG TTTTCCAGCC
+     6481 CCCCTCATCA CCGATTAAAC AGTAAACGAA GTTGGTTGAC GTCAGAGCAT GTTCAGTCAT
+     6541 TAAAACAGTA CCAGCGCCTC AACAAAAGCC TCATACCTGA AAACTCTCGG ATTGCACTCC
+     6601 GTAGAAAATA CAAAATCGAG CTTCAAAATA TGGTCAGATC TTGGTTTGCA ATGCAAGACC
+     6661 ATACCCTTGA TTCGAACATA CTTATCCAAC ATTTGAATCA TGACCTATCT TACTTAGGAG
+     6721 CCACAAAACG TTTTGCATAC GATCCAGCGA TGACCAAGCT CTTTACTGAG CTTTTGAAAC
+     6781 GAGAGTTATC AAATTCAATC AATAATGGTG AGCAACACAC TAATGGATCG TTTTTAGTCC
+     6841 TACCGAATAT CAGGGTTTGT GGCGCAACAG CTTTAAGCTC CCCGGTAACG GTGGGGATTC
+     6901 CATCACTTAC AGCTTTCTTT GGCTTCGTTC ACGCATTTGA ACGGAATATA AATCGCACCA
+     6961 CCTCATCGTT TCGTGTTGAA TCCTTTGCGA TATGCGTCCA TCAACTACAT GTCGAGAAGC
+     7021 GAGGTTTGAC AGCAGAGTTT GTGGAAAAAG GCGACGGGAC TATATCCGCT CCCGCGACCA
+     7081 GGGATGACTG GCAGTGTGAT GTCGTATTTA GCCTTATTTT GAACACCAAC TTTGCTCAAC
+     7141 ATATTGACCA AGATACGTTA GTTACATCAC TACCAAAGCG ATTGGCTCGG GGTTCAGCAA
+     7201 AAATTGCGAT TGATGACTTT AAACATATCA ACTCATTCTC GACATTAGAA ACAGCGATCG
+     7261 AATCTCTGCC AATAGAAGCT GGTAGGTGGT TATCACTTTA CGCACAGTCA AACAATAATC
+     7321 TAAGTGATCT ATTAGCAGCC ATGACAGAGG ACCATCAGCT CATGGCAAGC TGCGTCGGTT
+     7381 ACCACTTGTT AGAAGAGCCC AAAGATAAAC CAAACTCCCT CAGAGGTTAC AAACACGCTA
+     7441 TCGCCGAGTG CATCATTGGA CTCATTAACT CAATCACCTT TAGCTCAGAG ACTGATCCCA
+     7501 ACACAATCTT TTGGTCGCTA AAGAACTATC AAAACTACCT AGTGGTACAG CCAAGGAGTA
+     7561 TCAACGATGA AACTACCGAC AAATCTAGCC TATGACACGT GCGCATTTTA AAATAAAATA
+     7621 AATAATATAA TTAATTAAAC GAATATGAAA CTACCGACAA ATCTAGCCTA TGAGCGCTCT
+     7681 ATCGACCCAT CAGATGTCTG TTTTTTTGTC GTCTGGCCCG ATGATAGAAA AACACCTTTA
+     7741 ACCTACAATT CTCGTACTCT GCTCGGGCAA ATGGAAGCGG CATCATTAGC CTATGATGTC
+     7801 TCAGGTCAAC CAATAAAAAG TGCCACCGCT GAGGCGTTAG CTCAAGGGAA CCCTCATCAA
+     7861 GTTGATTTCT GCCACGTTCC ATACGGTGCG AGTCATATTG AATGCAGTTT CTCCGTCTCG
+     7921 TTTTCTTCTG AACTACGTCA ACCATATAAG TGTAACTCAA GCAAAGTTAA ACAAACGCTA
+     7981 GTGCAATTAG TCGAGCTCTA CGAAACGAAA ATCGGCTGGA CTGAGCTAGC AACCCGATAT
+     8041 TTGATGAACA TTTGCAACGG TAAATGGCTG TGGAAAAATA CCCGTAAAGC CTATTGCTGG
+     8101 AACATTGTAC TTACACCTTG GCCTTGGAAC GGGGAAAAGG TTGGATTTGA AGATATTCGT
+     8161 ACTAACTACA CCTCACGGCA AGACTTTAAA AATAATAAAA ATTGGTCTGC TATAGTTGAA
+     8221 ATGATCAAAA CCGCATTTTC TAGTACTGAT GGGCTGGCGA TATTTGAAGT CAGGGCCACC
+     8281 TTGCACTTGC CAACGAATGC TATGGTGCGG CCAAGCCAAG TTTTCACAGA AAAAGAAAGT
+     8341 GGCAGTAAAA GTAAATCTAA AACTCAAAAC AGTCGAGTTT TTCAGAGTAC AACTATTGAT
+     8401 GGTGAACGAT CGCCAATACT AGGGGCCTTT AAAACGGGAG CAGCTATTGC AACCATTGAC
+     8461 GACTGGTATC CTGAAGCCAC TGAGCCACTA AGGGTCGGAC GGTTTGGGGT TCATCGCGAA
+     8521 GATGTCACTT GCTACCGTCA TCCGTCTACC GGAAAAGATT TTTTCTCGAT ATTACAACAA
+     8581 GCAGAGCACT ATATTGAAGT GTTGAGCGCC AACAAAACTC CCGCTCAAGA AACTATCAAC
+     8641 GACATGCACT TTTTAATGGC TAACCTGATT AAGGGTGGGA TGTTCCAGCA TAAAGGAGAC
+     8701 TGAAAATCTG TTTTTAACAT ATGGCACTAA TGAAATGGTA TTATAAGACA ATCACCTTTC
+     8761 TGCCAGAGTT GTGCAACAAC GAGTCACTGG CTGCAAAGTG TCTCCGCGTT CTGCATGGAT
+     8821 TTAACTATCA GTATGAGACA CGAAATATCG GCGTTTCATT TCCGCTTTGG TGTGATGCAA
+     8881 CGGTTGGAAA AAAGATTTCA TTTGTCAGCA AGAACAAGAT AGAACTCGAC TTACTACTTA
+     8941 AACAACACTA TTTCGTCCAA ATGGAACAAC TTCAATACTT TCATATATCC AACACTGTTC
+     9001 TCGTCCCAGA AGATTGTACA TACGTTTCCT TTAGACGCTG TCAATCTATA GATAAGCTCA
+     9061 CAGCAGCAGG GCTGGCAAGG AAAATCAGAC GCCTGGAGAA ACGTGCTCTA TCTAGAGGCG
+     9121 AGCAATTTGA CCCATCATCT TTTGCTCAAA AAGAGCATAC TGCAATAGCG CACTACCACT
+     9181 CACTTGGGGA GTCCAGCAAA CAGACGAACC GCAACTTTCG ACTCAATATC AGGATGCTCT
+     9241 CGGAGCAACC CCGTGAGGGG AACTCGATTT TTAGTAGCTA TGGCTTATCA AATTCAGAAA
+     9301 ACTCGTTTCA GCCTGTACCC TTAATCTGAC GATATACCAT GGGATAAAGT TTGGAAGATA
+     9361 AAGCTAAAAG TTCTTATCTT TGCAGTGGAT CCGTGAACTG CCGAGTAGGT AGCTGATAAC
+     9421 AGTCTTCCTG TCTTGTCAGC TAGGTGAAGA CTGTGAACTG CCGAGTAGGT AGCTGATAAC
+     9481 GCTGCTGCCA CCGCTGAGCA ATAATGAACT GCACTTGCTT TGATAATTAA TGATAAACAA
+     9541 TCTAAAAGCA CTCTAATCGT TATCGGAGTG CTTTTAGATT ACTAATCAAA TTGCTTCTAC
+     9601 TAATTGCCTA TCTTGGTCGA CGGTATCGAT AAGCTTGATA TCGAATTCTG TTGATACAAC
+     9661 CATAAAATGA TAATTACACC CATAAATTGA TAATTATCAC ACCCACTAGG TTACAAAGAA
+     9721 AATTCGACAA ACTGTTATTT TTCTATCTAT TTATTTGGGT GGGAAACTTT AGTTATGTAC
+     9781 CTTTGTCGGC AAATAAAGAT ATTCTCGTCA AACAAATATA AATAATATAA ACATGGCAAA
+     9841 CTTGTTACAA CAAAACGGTA TTGACATTAC CGTTTACGAA AGAGATGAAA ACCCAAAAGC
+     9901 ACGAGTTTGG GGCGGAACGC TTGACCTTCA CAAAAATTCA GGACAAGAAG CAATGAAAAA
+     9961 AGTAGGATTG TTGCAAACCT ACTATGATTT GGCGCTACCT ATGGGCGTAA ACTTTGCTGA
+    10021 TGAGAAGGGT AACATTATAG CAACAAGAAA CCCGACACTC GAAAATAAGT TTGACAACCC
+    10081 CGAAATAAAT AGAAACGCGT TGCGAAAAAT GTTGCTTGGC AGCTTGAAAA ATGACACAGT
+    10141 TGTTTGGGAT AGAAAATCTA TTGGGCTTGA ACAAGAAAAC GGAAAATGGC TGCTACATTT
+    10201 TGAAAATAAG CCAACTGCAT TGGCCGACTT TATTATTGTT TCCAATGGTG GAATGTCTAA
+    10261 AATAAGAAAT TTTGTTTCAG ATAATGAAGT CGAAGAAACA GGTACTTTTA TTATTCAGGG
+    10321 CGACATTCCT GAACCAGAAA CGAACTGCCC TGAATTTTAT AAGTTGTGCA ACAACAATAG
+    10381 ACTAATGACC GCACATCAAG GGAATTTATT AGTTGCGAAT CCATTTAACA ACGGAATGTT
+    10441 AACTTACGGT GTCATTTTCA AAAAGCCTGA AGAATGGAAT AATGGAAAAG GATTAGATTT
+    10501 TAAGCCCACA AAAAGCGTTT CCGAGTTCTT GACAAACAGG TTTTCAAATT GGAGCAATGA
+    10561 ATACAAGGAG TTAATTCGTT CAACAACTTT TTTCGTTGGT TTAACAATAA AAATATTTCC
+    10621 GCTAGACAAA AAGCCTTGGA AGAGTAATCG TCCGTTACCC ATAACTTTAA TTGGCGACAC
+    10681 AGCTCACCTA ATGCCACCTT TTGCAGGGCA GGGCGTAAAC ATTGGACTAA TGGACGCTTT
+    10741 GATTTTGTCA GAAAATCTTA CAAACGGGAA ATTTGGAACG ATACAAAGTG CTATTGATGA
+    10801 CTATGAACAA CGAATGTTTG TTTACGCAAC AGAAGCACAA GCGGACTCGA CAAAGAATGA
+    10861 AATAGAAATG CGAAATCCGA GCTTTACTTT TCAACAGCTA ATGAATGTAT AATTTTTTTA
+    10921 AGGCAGTTAT TGGTGCCCTT CTAGAGTCCT TACTGCAGTA GTTTTGCTGA AATACTCGAT
+    10981 TCACAAAAAT ATCAACTTAT GGTTGTTTTG TGAGATATCA ATATATGGTT GTTTTGTGGT
+    11041 TAAGTTGCTG ATTATAAATA ATTATTAAAT ATCACTTTAT GGTTGCATCA ACATGCTTCG
+    11101 GGGTCATTAT AGCGATTTTT TCGGTATATC CATCCTTTTT CGCACGATAT ACAGGATTTT
+    11161 GCCAAAGGGT TCGTGTAGAC TTTCCTTGGT GTATCCAACG GCGTCAGCCG GGCAGGATAG
+    11221 GTGAAGTAGG CCCACCCGCG AGCGGGTGTT CCTTCTTCAC TGTCCCTTAT TCGCACCTGG
+    11281 CGGTGCTCAA CGGGAATCCT GCTCTGCGAG GCTGGCCGGC TACCGCCGGC GTAACAGATG
+    11341 AGGGCAAGCG GATGGCTGAT GAAACCAAGC CAACCAGGAA GGGCAGCCCA CCTATCAAGG
+    11401 TGTACTGCCT TCCAGACGAA CGAAGAGCGA TTGAGGAAAA GGCGGCGGCG GCCGGCATGA
+    11461 GCCTGTCGGC CTACCTGCTG GCCGTCGGCC AGGGCTACAA AATCACGGGC GTCGTGGACT
+    11521 ATGAGCACGT CCGCGAGCTG GCCCGCATCA ATGGCGACCT GGGCCGCCTG GGCGGCCTGC
+    11581 TGAAACTCTG GCTCACCGAC GACCCGCGCA CGGCGCGGTT CGGTGATGCC ACGATCCTCG
+    11641 CCCTGCTGGC GAAGATCGAA GAGAAGCAGG ACGAGCTTGG CAAGGTCATG ATGGGCGTGG
+    11701 TCCGCCCGAG GGCAGAGCCA TGACTTTTTT AGCCGCTAAA ACGGCCGGGG GGTGCGCGTG
+    11761 ATTGCCAAGC ACGTCCCCAT GCGCTCCATC AAGAAGAGCG ACTTCGCGGA GCTGGTGAAG
+    11821 TACATCACCG ACGAGCAAGG CAAGACCGAT CCGGTGTGAA AGCCACCGCG GTTGTCTCTC
+    11881 TTTCCTCTCT GAAAAATAAA TGTTTTTATT GCTTATTATC CGCACCCAAA AAGTTGCATT
+    11941 TATAAGTTGA ACTCAAGAAG TATTCACCTG TAAGAAGTTA CTAATGACAA AAAAGAAATT
+    12001 GCCCGTTCGT TTTACGGGTC AGCACTTTAC TATTGATAAA GTGCTAATAA AAGATGCAAT
+    12061 AAGACAAGCA AATATAAGTA ATCAGGATAC GGTTTTAGAT ATTGGGGCAG GCAAGGGGTT
+    12121 TCTTACTGTT CATTTATTAA AAATCGCCAA CAATGTTGTT GCTATTGAAA ACGACACAGC
+    12181 TTTGGTTGAA CATTTACGAA AATTATTTTC TGATGCCCGA AATGTTCAAG TTGTCGGTTG
+    12241 TGATTTTAGG AATTTTGCAG TTCCGAAATT TCCTTTCAAA GTGGTGTCAA ATATTCCTTA
+    12301 TGGCATTACT TCCGATATTT TCAAAATCCT GATGTTTGAG AGTCTTGGAA ATTTTCTGGG
+    12361 AGGTTCCATT GTCCTTCAAT TAGAACCTAC ACAAAAGTTA TTTTCGAGGA AGCTTTACAA
+    12421 TCCATATACC GTTTTCTATC ATACTTTTTT TGATTTGAAA CTTGTCTATG AGGTAGGTCC
+    12481 TGAAAGTTTC TTGCCACCGC CAACTGTCAA ATCAGCCCTG TTAAACATTA AAAGAAAACA
+    12541 CTTATTTTTT GATTTTAAGT TTAAAGCCAA ATACTTAGCA TTTATTTCCT GTCTGTTAGA
+    12601 GAAACCTGAT TTATCTGTAA AAACAGCTTT AAAGTCGATT TTCAGGAAAA GTCAGGTCAG
+    12661 GTCAATTTCG GAAAAATTCG GTTTAAACCT TAATGCTCAA ATTGTTTGTT TGTCTCCAAG
+    12721 TCAATGGTTA AACTGTTTTT TGGAAATGCT GGAAGTTGTC CCTGAAAAAT TTCATCCTTC
+    12781 GTAGTTCAAA GTCGGGTGGT TGTCAAGATG ATTTTTTTGG TTTGGTGTCG TCTTTTTTTA
+    12841 AGCTGCCGCA TAACGGCTGG CGAGCTCCAG CTTTTGTTCC CTTTAGTGAG GGTTAATTGC
+    12901 GCGCTTGGCG TAATCATGGT CATAGCTGTT TCCTGTGTGA AATTGTTATC CGCTTTTTCC
+    12961 ATAGGCTCCG CCCCCCTGAC GAGCATCACA AAAATCGACG CTCAAGTCAG AGGTGGCGAA
+    13021 ACCCGACAGG ACTATAAAGA TACCAGGCGT TTCCCCCTGG AAGCTCCCTC GTGCGCTCTC
+    13081 CTGTTCCGAC CCTGCCGCTT ACCGGATACC TGTCCGCCTT TCTCCCTTCG GGAAGCGTGG
+    13141 CGCTTTCTCA TAGCTCACGC TGTAGGTATC TCAGTTCGGT GTAGGTCGTT CGCTCCAAGC
+    13201 TGGGCTGTGT GCACGAACCC CCCGTTCAGC CCGACCGCTG CGCCTTATCC GGTAACTATC
+    13261 GTCTTGAGTC CAACCCGGTA AGACACGACT TATCGCCACT GGCAGCAGCC ACTGGTAACA
+    13321 GGATTAGCAG AGCGAGGTAT GTAGGCGGTG CTACAGAGTT CTTGAAGTGG TGGCCTAACT
+    13381 ACGGCTACAC TAGAAGGACA GTATTTGGTA TCTGCGCTCT GCTGAAGCCA GTTACCTTCG
+    13441 GAAAAAGAGT TGGTAGCTCT TGATCCGGCA AACAAACCAC CGCTGGTAGC GGTGGTTTTT
+    13501 TTGTTTGCAA GCAGCAGATT ACGCGCAGAA AAAAAGGATC TCAAGAAGAT CCTTTGATCT
+    13561 TTTCTACGGG GTCTGACGCT CAGTGGAACG AAAGAGTAAA CTTGGTCTGA CAGTTACCAA
+    13621 TGCTTAATCA GTGAGGCACC TATCTCAGCG ATCTGTCTAT TTCGTTCATC CATAGTTGCC
+    13681 TGACTCCCCG TCGTGTAGAT AACTACGATA CGGGAGGGCT TACCATCTGG CCCCAGTGCT
+    13741 GCAATGATAC CGCGAGACCC ACGCTCACCG GCTCCAGATT TATCAGCAAT AAACCAGCCA
+    13801 GCCGGAAGGG CCGAGCGCAG AAGTGGTCCT GCAACTTTAT CCGCCTCCAT CCAGTCTATT
+    13861 AATTGTTGCC GGGAAGCTAG AGTAAGTAGT TCGCCAGTTA ATAGTTTGCG CAACGTTGTT
+    13921 GCCATTGCTA CAGGCATCGT GGTGTCACGC TCGTCGTTTG GTATGGCTTC ATTCAGCTCC
+    13981 GGTTCCCAAC GATCAAGGCG AGTTACATGA TCCCCCATGT TGTGCAAAAA AGCGGTTAGC
+    14041 TCCTTCGGTC CTCCGATCGT TGTCAGAAGT AAGTTGGCCG CAGTGTTATC ACTCATGGTT
+    14101 ATGGCAGCAC TGCATAATTC TCTTACTGTC ATGCCATCCG TAAGATGCTT TTCTGTGACT
+    14161 GGTGAGTACT CAACCAAGTC ATTCTGAGAA TAGTGTATGC GGCGACCGAG TTGCTCTTGC
+    14221 CCGGCGTCAA TACGGGATAA TACCGCGCCA CATAGCAGAA CTTTAAAAGT GCTCATCATT
+    14281 GGAAAACGTT CTTCGGGGCG AAAACTCTCA AGGATCTTAC CGCTGTTGAG ATCCAGTTCG
+    14341 ATGTAACCCA CTCGTGCACC CAACTGATCT TCAGCATCTT TTACTTTCAC CAGCGTTTCT
+    14401 GGGTGAGCAA AAACAGGAAG GCAAAATGCC GCAAAAAAGG GAATAAGGGC GACACGGAAA
+    14461 TGTTGAATAC TCATACTCTT CCTTTTTCAA TATTATTGAA GCATTTATCA GGGTTATTGT
+    14521 CTCATGAGCG GGCCAGGGTT TTCCCAGTCA CGACGTTGTA AAACGACGGC CAGTGAGCGC
+    14581 GCGTAATACG ACTCACTATA GGGCGAATTG GGTACCTACC CGGAGTGTTT CAGCCGGGTA
+    14641 ATCTTGTTAC TTATCCTTGA TTTTCCCTTT AAGGGCGTTT ATAATCCACC CTTTCGGATT
+    14701 GTTCTTTTCT CGTGATTTTC CGTTTAGGAG AGCCAGTTCT CCGATAAGGT CGGTTATCTT
+    14761 TTCTTGTGCC GTTATGAATG TCTCTTTGTT CCGGTTTATC TCTTCCGATG TGAAGCCGCA
+    14821 GGAATAACGG AGGTACTCGT ACACATGGCT GTCTATCTGA TATCGTGCTG TAACCTTTGC
+    14881 TTGCAATTCT TTCCCTTCCA GTTCTTCATC TCTGAACTGT GGTTGATAGA CCGGGTAGAA
+    14941 CCTAAACCCG GTCACCTTGC TACGTTTGTT GTTTGGGTTT TCACGCACTT TCACGTAGTT
+    15001 GAAAGTGTAT GGGCAGCTCT CATCAAGCGC AGCCTTTGCT GGTTTCAAAA CTCTTTCCTC
+    15061 AAAATGATCT ATTCTGTCTT TTCCGTTCTT GTCCTTGTAT TTGTCCGCAG GTATGCCAAG
+    15121 ACGGTCTTTC AAGTTTTCAA GGGATATATC CAAAGGGTAC ACCTGCCCAC TCATTAACAT
+    15181 GTAAAACCTA AGGGAATACC CAGTAGGTAG CGCAAGAGCC TTGTTTAACT CAAATTCTCT
+    15241 GTACCCCTTG GCGAACTTGG TAAACACATC CCAAAGGTCG TTAGACACAC GAAAGGTTAT
+    15301 AATGCCAGTG CGTTTTTTAT ATTTTGGGTT AGATATAAAT CCGCACTTCC ACCATTCCTC
+    15361 GTCATCTTCG TAAGTAAAAA AACGTCCTGC CAAAGAATCG AGTGCGGCTA TGATTTCATT
+    15421 GTAATCACGT CCGGAAAAAA TAACGTCAGA TACATGCATT TGTGCATCAA CATCCCAAAG
+    15481 TCCATGCTCA AACTTGCGTT TCGTGCCTGC ATAATCTTTC AGTTTTACTC CCTTTAGTTC
+    15541 AGCTTGGCAC GCTTCCAGTA TGCGAAGAAC TATTCTTTGT TCGTGTATGG ACATGTCTTG
+    15601 CTGTTTTGAC CATGTATATA CCCATGAAAC AACAACATCT TTATTCTTGG TAATAGGTAG
+    15661 TTTCTTTTTC ATAAACGATT GATTTGCTGC AAATATACAC AATCCCCACA TTAAAACAAA
+    15721 AAAAGAGGGG TAAAACTCCC AAAGTGTGGG GACTAATTTA CTTTTAAACT CCCAAAGTGT
+    15781 GGGGACTAAA CTCCCAAAGT GTGGGGAA
+//

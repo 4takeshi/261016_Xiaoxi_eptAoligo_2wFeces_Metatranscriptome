@@ -1,0 +1,6 @@
+strain	contig	genome_frag_start	strand	frag_len	cds_frag_start	cds_frag_end	cds_len	catalytic_domain_frag	mut_type	mut_frag_start	mut_frag_end	del_bp	ins_bp	cds_pos_of_mutation	cds_deleted_bp	cds_retained_bp	predicted_log2FC_genotype_only	genome_mut_start	genome_mut_end
+Bth_VPI			+	2301	1	1506	1506		deletion	873	1375	503	-1	873..1375	503	1003	-0.59		
+Bth_St8	BQNN01000001.1	2841992	+	3100	1184	2887	1704	1337..1765	deletion	1199	2887	1689	-1	16..1704	1689	15	-6.83	2843190	2844878
+Bun_8492			+	3929	1571	3271	1701	1778..2175	deletion	1770	2344	575	0	200..774	575	1126	-0.60		
+Odo_St23	BQOE01000001.1	5080080	-	1761	1	1761	1761		deletion	1425	1422	-2	1443	CDS 337 位の直後	0	1761	0 〜 -2.39	5081504	5081501
+Odo_St24	BQOG01000001.1	330286	+	1761	1	1761	1761		insertion	348	347	0	1445	CDS 347 位の直後	0	1761	0 〜 -2.34	330633	330632

@@ -1,0 +1,8 @@
+/* 幅の広い表(列数の多いMarkdown表など)が本文の幅を超えると、右側の目次(TOC)の下に
+   潜り込んで重なって見える問題への対処。表を横スクロール可能な箱に収め、右目次と重ならない
+   ようにする。embed-resources: true によりHTML本体に埋め込まれる。 */
+#quarto-document-content table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}

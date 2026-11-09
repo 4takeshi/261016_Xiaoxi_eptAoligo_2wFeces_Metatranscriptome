@@ -1,0 +1,32 @@
+#!/bin/sh
+# コミット前に「ipynb -> qmd」の一方向変換を行い、qmd/ の写し（コード+markdown のみ）を
+# 最新化して一緒にコミットする。GitHub 上で差分を読みやすくするためのもの。
+#
+# 重要: 必ず一方向（ipynb -> qmd）のみ。qmd -> ipynb の変換や jupytext --sync は、
+# markdown セルが連続する箇所でセルが結合・消失する不具合があるため使わない
+# （260914_KAD_metaFL16S/SETUP.md 参照）。qmd を直接編集しても .ipynb には反映されない。
+export PATH="$HOME/quarto/bin:$HOME/.local/bin:$PATH"
+
+# (1) ステージされた notebook
+# ★ ai_reference/ は除く。claude.ai の草案で markdown に水平線 '---' が入っており、
+#   jupytext -> quarto が YAML メタデータブロックと誤認して落ちる（実測）。
+#   実行していない参考資料なので写しは作らない
+for nb in $(git diff --cached --name-only --diff-filter=ACM | grep '\.ipynb$' | grep -v '^ai_reference/'); do
+  qmd="qmd/$(basename "$nb" .ipynb).qmd"
+  echo "[pre-commit] $nb -> $qmd"
+  jupytext --to qmd --output "$qmd" "$nb" || exit 1
+  git add "$qmd"
+done
+
+# (2) ★ .gitignore に入れている notebook も、写しだけは追いかける。
+#     6_pathway.ipynb は 95 MB あるので本体は管理しないが、コード+markdown は残す。
+#     ステージされないのでここで明示的に拾う（本体より新しければ作り直す）
+for nb in 6_pathway.ipynb; do
+  [ -f "$nb" ] || continue
+  qmd="qmd/$(basename "$nb" .ipynb).qmd"
+  if [ ! -f "$qmd" ] || [ "$nb" -nt "$qmd" ]; then
+    echo "[pre-commit] (ignored) $nb -> $qmd"
+    jupytext --to qmd --output "$qmd" "$nb" || exit 1
+  fi
+  git add "$qmd"
+done

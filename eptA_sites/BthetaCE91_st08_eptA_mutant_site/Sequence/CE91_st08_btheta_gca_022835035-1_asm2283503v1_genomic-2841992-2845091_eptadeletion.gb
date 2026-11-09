@@ -1,0 +1,103 @@
+LOCUS       CE91_st08_Btheta_GCA_02 1410 bp ds-DNA     linear       19-OCT-2026
+DEFINITION  .
+KEYWORDS    "marker:GKH20102.1_1837_Btheta_st08_5AR,
+            GKH20103.1_1838_Btheta_st08_5BR, Upstream_region_st08_5AR,
+            downstream_region_st08_5AR, 26bp_exDwn_st08_5AR_R,
+            28bp_exDwn_st08_Bamtam_R"
+COMMENT     >BQNN01000001.1 Bacteroides thetaiotaomicron CE91-St8 DNA,
+            sequence1, whole genome shotgun sequence
+FEATURES             Location/Qualifiers
+     misc_feature    1..398
+                     /label="upstream1kb_st08BamAPF1103"
+                     /ApEinfo_revcolor="#d59687"
+                     /ApEinfo_fwdcolor="#d59687"
+     misc_feature    1..398
+                     /label="upstream0.7kb_st08BamAPF1103"
+                     /ApEinfo_revcolor="#c6c9d1"
+                     /ApEinfo_fwdcolor="#c6c9d1"
+     CDS             1..1197
+                     /label="GKH20318.1_2053_Btheta_st08_membrane protein Ba..."
+                     /ApEinfo_revcolor="#faac61"
+                     /ApEinfo_fwdcolor="#faac61"
+                     /note="label: GKH20318.1_2053_Btheta_st08_membrane protein Bamtam locus_tag: GKH20318.1_2053_Btheta_st08_membrane protein Bamtam"
+     CDS             1..1197
+                     /ApEinfo_revcolor="#84b0dc"
+                     /ApEinfo_fwdcolor="#84b0dc"
+                     /translation="MMDARRNGLVLLALLLLTQTTISAQTDSMGKDVPVDSVSVATSDSLQTKRSFFKKFLDYFNDANKEKKKKKFDFSVIGGPHYSSDTKFGLGLVAAGLYRTDRNDSILPPSNVSLYGDVSTVGFYLLGVRGNHLFPQEKYRLNYNLYFYSFPSLYWGRGYDNGANSDNESDYKRFQAQVKVDFMFRVAKSFYIGPMAVFDYIDGRDFEKPELWEGMSARTTNTSLGLSLLYDSRDYLTNAYQGYYLRIDQRFSPAFLGNKYAFSSTELTTSYYHPVWKGGVLAGQFHTLLNYGNPPWGLMATLGSSYSMRGYYEGRYRDKCAMDAQIELRQHVWKRNGVAVWAGAGTVFPRFSDFTPKHILPNYGFGYRWEFKKRVNVRLDLGFGKHQTGFIFNINEAF*"
+     misc_feature    129..148
+                     /label="-69bp_exUp_st08_eptA_F"
+                     /ApEinfo_revcolor="#75c6a9"
+                     /ApEinfo_fwdcolor="#75c6a9"
+                     /note="label: -69bp_exUp_st08_eptA_F locus_tag: -69bp_exUp_st08_eptA_F note: /ApEinfo_group=69bp_exUp_st08_eptA_F"
+                     /benchling_strand="none"
+     misc_feature    198..1197
+                     /label="first14bp+upstream_region_st08_eptA"
+                     /ApEinfo_revcolor="#00ffff"
+                     /ApEinfo_fwdcolor="#00ffff"
+                     /note="label: first14bp+upstream_region_st08_eptA locus_tag: first14bp+upstream_region_st08_eptA"
+                     /benchling_strand="none"
+     primer          249..268
+                     /label="Btheta_st08_PF1103_checking primer_F"
+                     /note="sequence: CAGTGATACCAAGTTCGGTC"
+                     /ApEinfo_revcolor="#75c6a9"
+                     /ApEinfo_fwdcolor="#75c6a9"
+     misc_feature    399..1068
+                     /label="Pfam PF01103 Omp85 superfamily domain"
+                     /ApEinfo_revcolor="#ff9ccd"
+                     /ApEinfo_fwdcolor="#ff9ccd"
+     misc_feature    1069..1197
+                     /label="downstream1kb_st08BamAPF1103"
+                     /ApEinfo_revcolor="#75c6a9"
+                     /ApEinfo_fwdcolor="#75c6a9"
+     misc_feature    1069..1197
+                     /label="downstream0.7kb_st08BamAPF1103"
+                     /ApEinfo_revcolor="#c7b0e3"
+                     /ApEinfo_fwdcolor="#c7b0e3"
+     primer_bind     1101..1120
+                     /label="77up_eptA_check_F"
+                     /ApEinfo_revcolor="#75c6a9"
+                     /ApEinfo_fwdcolor="#75c6a9"
+                     /note="label: 77up_eptA_check_F locus_tag: 77up_eptA_check_F"
+     CDS             1184..1197
+                     /label="GKH20319.1_2054_Btheta_st08_eptA"
+                     /ApEinfo_revcolor="#f58a5e"
+                     /ApEinfo_fwdcolor="#f58a5e"
+                     /note="label: GKH20319.1_2054_Btheta_st08_eptA locus_tag: GKH20319.1_2054_Btheta_st08_eptA"
+     misc_feature    1184..1197
+                     /label="last14bp+downstream_region_st08_bamtam"
+                     /ApEinfo_revcolor="#00ffff"
+                     /ApEinfo_fwdcolor="#00ffff"
+                     /note="label: last14bp+downstream_region_st08_bamtam locus_tag: last14bp+downstream_region_st08_bamtam"
+                     /benchling_strand="none"
+     misc_feature    1198..1410
+                     /label="downstream_region_st08_eptA"
+                     /ApEinfo_revcolor="#00ffff"
+                     /ApEinfo_fwdcolor="#00ffff"
+                     /note="label: downstream_region_st08_eptA locus_tag: downstream_region_st08_eptA"
+                     /benchling_strand="none"
+ORIGIN
+        1 ATGATGGATG CTAGACGAAA CGGACTTGTA TTATTGGCGC TATTGTTGTT GACACAAACC
+       61 ACTATAAGTG CGCAGACTGA TTCTATGGGT AAAGATGTGC CGGTAGATTC TGTCTCTGTG
+      121 GCAACCTCAG ACTCGCTTCA GACAAAGCGT AGTTTCTTTA AGAAGTTTCT TGATTATTTT
+      181 AATGACGCCA ATAAGGAAAA GAAAAAGAAA AAGTTCGATT TCAGTGTGAT TGGCGGTCCT
+      241 CATTATTCCA GTGATACCAA GTTCGGTCTT GGATTGGTGG CGGCGGGGCT GTATCGTACA
+      301 GACCGCAATG ATTCGATCCT TCCCCCTTCG AATGTTTCTC TTTATGGAGA TGTCTCTACT
+      361 GTTGGGTTTT ATCTGTTGGG AGTAAGAGGC AATCACTTGT TCCCGCAAGA GAAATACCGG
+      421 TTGAATTATA ATCTTTATTT TTATTCTTTC CCCAGTCTTT ATTGGGGAAG GGGATATGAT
+      481 AATGGAGCGA ACTCTGATAA TGAAAGCGAC TACAAACGCT TTCAGGCACA AGTGAAAGTC
+      541 GACTTCATGT TCCGTGTAGC GAAAAGTTTC TATATCGGAC CGATGGCTGT ATTCGATTAT
+      601 ATAGATGGGC GTGACTTTGA GAAACCGGAA CTTTGGGAAG GAATGTCGGC ACGCACTACT
+      661 AATACGAGTC TCGGTCTTTC CCTTCTTTAT GACTCCCGTG ATTATCTGAC CAATGCCTAT
+      721 CAGGGATATT ACTTGCGGAT AGACCAACGG TTTAGCCCGG CTTTTCTCGG TAATAAATAT
+      781 GCGTTTAGCA GTACGGAACT GACAACCAGC TATTATCATC CGGTATGGAA AGGCGGAGTT
+      841 CTTGCAGGAC AGTTTCACAC TTTACTGAAC TATGGCAATC CTCCGTGGGG ATTGATGGCA
+      901 ACCCTCGGAA GCTCTTACTC AATGCGTGGT TATTATGAAG GGCGTTATCG TGATAAATGT
+      961 GCGATGGATG CACAGATAGA ACTCCGCCAG CATGTATGGA AACGAAACGG AGTGGCTGTA
+     1021 TGGGCAGGAG CGGGAACTGT ATTTCCGCGC TTCTCCGACT TTACGCCGAA GCATATCCTT
+     1081 CCTAATTATG GTTTCGGCTA TCGCTGGGAA TTTAAGAAGA GAGTAAATGT ACGTTTGGAT
+     1141 TTAGGGTTTG GTAAGCACCA GACCGGATTT ATATTTAATA TCAATGAAGC TTTTTAAGTA
+     1201 ATAGGTAATA AGTAATAAGT AATAGGTAAT AGGTAATAAG TAATAAGTAA TACACCGTAG
+     1261 CCGTACAGGC AAGGCTATAC GAAGCTACGA TTATTACCTA TTACTTATTA CCTATTACTT
+     1321 ATTCATTAAT CCTTGTTAAT TCTTATATCC AAAAGCATGA TTGGCGTGTT ATTTGCGATA
+     1381 TAAAAGTATG AACGATTAAA TTCATAAAAC
+//

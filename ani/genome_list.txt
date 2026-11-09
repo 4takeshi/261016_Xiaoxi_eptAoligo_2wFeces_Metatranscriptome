@@ -1,0 +1,5 @@
+/mnt/scratch/tanoue/genome/261016_Xiaoxi_eptAoligo_5strains/fna/Bth_St8.fna
+/mnt/scratch/tanoue/genome/261016_Xiaoxi_eptAoligo_5strains/fna/Bth_VPI.fna
+/mnt/scratch/tanoue/genome/261016_Xiaoxi_eptAoligo_5strains/fna/Bun_8492.fna
+/mnt/scratch/tanoue/genome/261016_Xiaoxi_eptAoligo_5strains/fna/Odo_St23.fna
+/mnt/scratch/tanoue/genome/261016_Xiaoxi_eptAoligo_5strains/fna/Odo_St24.fna

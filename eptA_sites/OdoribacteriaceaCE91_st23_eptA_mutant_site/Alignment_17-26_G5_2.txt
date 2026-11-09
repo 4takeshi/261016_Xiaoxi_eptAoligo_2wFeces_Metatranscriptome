@@ -1,0 +1,340 @@
+RID: 0U9P1VW5114	
+Job Title: 17-26G5_6-22bp_st23eptAPF08019_F01 				
+Program: BLASTN 
+Query: 17-26G5_6-22bp_st23eptAPF08019_F01 ID: lcl|Query_1272668(dna) Length: 1000
+			            
+Subject #1:st23_genome ID: lcl|Query_1272670 Length: 5647539
+Subject #2:pME008 ID: lcl|Query_1272671 Length: 15808
+	                    			
+	
+Sequences producing significant alignments:
+                                                                  Scientific      Common                     Max    Total Query   E    Per.   Acc.                        
+Description                                                       Name            Name            Taxid      Score  Score cover Value  Ident  Len        Accession        
+pME008                                                                                            0          1255   1255  72%   0.0    98.90  15808      Query_1272671    
+st23_genome                                                                                       0          473    473   27%   1e-133 98.89  5647539    Query_1272670    
+
+Alignments:
+
+>pME008
+Sequence ID: Query_1272671 Length: 15808
+Range 1: 10371 to 11095
+
+Score:1255 bits(1391), Expect:0.0, 
+Identities:717/725(99%),  Gaps:6/725(0%), Strand: Plus/Minus
+
+Query  278    CATGTTGATGCAACCATAAAGTGATATTTAATAATTATTTATAATCAGCAACTTAACCAC  337
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  11095  CATGTTGATGCAACCATAAAGTGATATTTAATAATTATTTATAATCAGCAACTTAACCAC  11036
+
+Query  338    AAAACAACCATATATTGATATCTCACAAAACAACCATAAGTTGATATTTTTGTGAATCGA  397
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  11035  AAAACAACCATATATTGATATCTCACAAAACAACCATAAGTTGATATTTTTGTGAATCGA  10976
+
+Query  398    GTATTTCAGCAAAACTACTGCAGTAAGGACTCTAGAAGGGCACCAATAACTGCCTTaaaa  457
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10975  GTATTTCAGCAAAACTACTGCAGTAAGGACTCTAGAAGGGCACCAATAACTGCCTTAAAA  10916
+
+Query  458    aaaTTATACATTCATTAGCTGTTGAAAAGTAAAGCTCGGATTTCGCATTTCTATTTCATT  517
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10915  AAATTATACATTCATTAGCTGTTGAAAAGTAAAGCTCGGATTTCGCATTTCTATTTCATT  10856
+
+Query  518    CTTTGTCGAGTCCGCTTGTGCTTCTGTTGCGTAAACAAACATTCGTTGTTCATAGTCATC  577
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10855  CTTTGTCGAGTCCGCTTGTGCTTCTGTTGCGTAAACAAACATTCGTTGTTCATAGTCATC  10796
+
+Query  578    AATAGCACTTTGTATCGTTCCAAATTTCCCGTTTGTAAGATTTTCTGACAAAATCAAAGC  637
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10795  AATAGCACTTTGTATCGTTCCAAATTTCCCGTTTGTAAGATTTTCTGACAAAATCAAAGC  10736
+
+Query  638    GTCCATTAGTCCAATGTTTACGCCCTGCCCTGCAAAAGGTGGCATTAGGTGAGCTGTGTC  697
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10735  GTCCATTAGTCCAATGTTTACGCCCTGCCCTGCAAAAGGTGGCATTAGGTGAGCTGTGTC  10676
+
+Query  698    GCCAATTAAAGTTATGGGTAACGGACGATTACTCTTCCAAGGCTTTTTGTCTAGCGGAGA  757
+              |||||||||||||||||||||||||||||||||||||||||||||||||||||||||| |
+Sbjct  10675  GCCAATTAAAGTTATGGGTAACGGACGATTACTCTTCCAAGGCTTTTTGTCTAGCGGAAA  10616
+
+Query  758    TATTTTTATTGTTAAACCAACGAAAAAAGTTGTTGAACGAATTAACTCCTTGTATTCATT  817
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10615  TATTTTTATTGTTAAACCAACGAAAAAAGTTGTTGAACGAATTAACTCCTTGTATTCATT  10556
+
+Query  818    GCTCCAATTTGAAAACCTGTTTGTCAAGAACTCGGAAACGCTTTTTGTGGGCTTAAAATC  877
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10555  GCTCCAATTTGAAAACCTGTTTGTCAAGAACTCGGAAACGCTTTTTGTGGGCTTAAAATC  10496
+
+Query  878    TAATCCTTTTCCATTATTCCATTCTTCAGGCTTTTTGAAAATGACACCGTAAGTTAACAT  937
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10495  TAATCCTTTTCCATTATTCCATTCTTCAGGCTTTTTGAAAATGACACCGTAAGTTAACAT  10436
+
+Query  938    TCCGTTGTT-AATGGATTCGC-ACTAATAA--TTCCTTGATGTGC-GTCA-TAGTCTATT  991
+              ||||||||| ||||||||||| ||||||||  | ||||||||||| |||| |||||||||
+Sbjct  10435  TCCGTTGTTAAATGGATTCGCAACTAATAAATTCCCTTGATGTGCGGTCATTAGTCTATT  10376
+
+Query  992    GTTGT  996
+              |||||
+Sbjct  10375  GTTGT  10371
+
+
+
+
+>st23_genome
+Sequence ID: Query_1272670 Length: 5647539
+Range 1: 5081235 to 5081503
+
+Score:473 bits(524), Expect:1e-133, 
+Identities:268/271(99%),  Gaps:2/271(0%), Strand: Plus/Plus
+
+Query  9        CACGTTTGCCTGGGTTATATATCTGTTTTTACCTCGTAGGTGTTATCCCTGTGTTTCTCG  68
+                |||||||||| ||  |||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081235  CACGTTTGCCGGG--TATATATCTGTTTTTACCTCGTAGGTGTTATCCCTGTGTTTCTCG  5081292
+
+Query  69       AAAGCGACCAGTCCGGAACCAATGATAAAGAAGATGATTCCCCACGTGATCATGTGCTTG  128
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081293  AAAGCGACCAGTCCGGAACCAATGATAAAGAAGATGATTCCCCACGTGATCATGTGCTTG  5081352
+
+Query  129      CGGAACACGGCAGTACGTTTCACTTTATGGTGTACGGCAATAGAGGCCAGCACGATAACA  188
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081353  CGGAACACGGCAGTACGTTTCACTTTATGGTGTACGGCAATAGAGGCCAGCACGATAACA  5081412
+
+Query  189      GGGATATAAAGGACGCAGACAATGATAATGGAGGGCCATATATTTCCCAGCAATTCCCCG  248
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081413  GGGATATAAAGGACGCAGACAATGATAATGGAGGGCCATATATTTCCCAGCAATTCCCCG  5081472
+
+Query  249      GCCTCGGAGGCGTTCGTGGTGGGTAGGTTCA  279
+                |||||||||||||||||||||||||||||||
+Sbjct  5081473  GCCTCGGAGGCGTTCGTGGTGGGTAGGTTCA  5081503
+
+
+
+
+		
+RID: 0U9R35DX114	
+Job Title: 17-26G5_6-306exUp_st23eptAPF08019_F03 				
+Program: BLASTN 
+Query: 17-26G5_6-306exUp_st23eptAPF08019_F03 ID: lcl|Query_5904720(dna) Length: 1000
+			            
+Subject #1:st23_genome ID: lcl|Query_5904722 Length: 5647539
+Subject #2:pME008 ID: lcl|Query_5904723 Length: 15808
+	                    			
+	
+Sequences producing significant alignments:
+                                                                  Scientific      Common                     Max    Total Query   E   Per.   Acc.                        
+Description                                                       Name            Name            Taxid      Score  Score cover Value Ident  Len        Accession        
+pME008                                                                                            0          957    957   58%   0.0   97.13  15808      Query_5904723    
+st23_genome                                                                                       0          742    865   48%   0.0   100.00 5647539    Query_5904722    
+
+Alignments:
+
+>pME008
+Sequence ID: Query_5904723 Length: 15808
+Range 1: 9648 to 10237
+
+Score:957 bits(1061), Expect:0.0, 
+Identities:575/592(97%),  Gaps:12/592(2%), Strand: Plus/Plus
+
+Query  419    CTGTTGATACAACCATAAAATGATAATTACACCCATAAATTGATAATTATCACACCCACC  478
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||| 
+Sbjct  9648   CTGTTGATACAACCATAAAATGATAATTACACCCATAAATTGATAATTATCACACCCAC-  9706
+
+Query  479    TAGGTTACAAAGAAAATTCGACAAACTGTTATTTTTCTATCTATTTATTTGGGTGGGAAA  538
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  9707   TAGGTTACAAAGAAAATTCGACAAACTGTTATTTTTCTATCTATTTATTTGGGTGGGAAA  9766
+
+Query  539    CTTTAGTTATGTACCTTTGTCGGCAAATAAAGATATTCTCGTCAAACAAATATAAATAAT  598
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  9767   CTTTAGTTATGTACCTTTGTCGGCAAATAAAGATATTCTCGTCAAACAAATATAAATAAT  9826
+
+Query  599    ATAAACATGGCAAACTTGTTACAACAAAACGGTATTGACATTACCGTTTACGAAAGAGAT  658
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  9827   ATAAACATGGCAAACTTGTTACAACAAAACGGTATTGACATTACCGTTTACGAAAGAGAT  9886
+
+Query  659    GAAAACCCAAAAGCACGAGTTTGGGGCGGAACGCTTGACCTTCACAGAAATTCAGGACAA  718
+              |||||||||||||||||||||||||||||||||||||||||||||| |||||||||||||
+Sbjct  9887   GAAAACCCAAAAGCACGAGTTTGGGGCGGAACGCTTGACCTTCACAAAAATTCAGGACAA  9946
+
+Query  719    GAAGCAATGAAAAAAGTAGGATTGTTGCAAACCTACTATGATTTGGCGCTACCTATGGGC  778
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  9947   GAAGCAATGAAAAAAGTAGGATTGTTGCAAACCTACTATGATTTGGCGCTACCTATGGGC  10006
+
+Query  779    GTAAACTTTGCTGATGAGAAGGGTAACATTATAGCAACAAGAAACCCGACACTCGAAAAT  838
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10007  GTAAACTTTGCTGATGAGAAGGGTAACATTATAGCAACAAGAAACCCGACACTCGAAAAT  10066
+
+Query  839    AAGTTTGACAACCCCGAAATAAATAGAAACGCGTTGCGAAAAATGTTGCTTGGCAGCTTG  898
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10067  AAGTTTGACAACCCCGAAATAAATAGAAACGCGTTGCGAAAAATGTTGCTTGGCAGCTTG  10126
+
+Query  899    -AAAATGACACAGTTGTTTGGGATAAAAAATCTATTGGGC-TGAAC-AGAAAACGG-AAA  954
+               |||||||||||||||||||||||| |||||||||||||| ||||| ||||||||| |||
+Sbjct  10127  AAAAATGACACAGTTGTTTGGGATAGAAAATCTATTGGGCTTGAACAAGAAAACGGAAAA  10186
+
+Query  955    TGGCTGCT-CATTT--GAAATAAGCC-ACTGCAT--GGCGACTTATATTGTT  1000
+              |||||||| |||||   ||||||||| |||||||  | |||||| |||| ||
+Sbjct  10187  TGGCTGCTACATTTTGAAAATAAGCCAACTGCATTGGCCGACTT-TATTATT  10237
+
+
+
+
+>st23_genome
+Sequence ID: Query_5904722 Length: 5647539
+Range 1: 5081499 to 5081909
+
+Score:742 bits(822), Expect:0.0, 
+Identities:411/411(100%),  Gaps:0/411(0%), Strand: Plus/Minus
+
+Query  9        AAACCCTGCCGACCTACGGAATAGGTTATCGCTGGGAATTTAAAAACAGAGTAAACGTAA  68
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081909  AAACCCTGCCGACCTACGGAATAGGTTATCGCTGGGAATTTAAAAACAGAGTAAACGTAA  5081850
+
+Query  69       GATTAGATTATGGATTCGGCAAAGGCGTCAGCGCATTCTACTTCGGTATTAACGAAGCTT  128
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081849  GATTAGATTATGGATTCGGCAAAGGCGTCAGCGCATTCTACTTCGGTATTAACGAAGCTT  5081790
+
+Query  129      TCTAAAGGGATCGTGAATTTCGTGAAACAGCCAAGATTACTGTTTTGGCTCTTTATCGTG  188
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081789  TCTAAAGGGATCGTGAATTTCGTGAAACAGCCAAGATTACTGTTTTGGCTCTTTATCGTG  5081730
+
+Query  189      TTGAATTTAGTCCCGAATTTCTGCTTGCTTTTCACGGAACCTCTCTCCGGACTGGGCAAA  248
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081729  TTGAATTTAGTCCCGAATTTCTGCTTGCTTTTCACGGAACCTCTCTCCGGACTGGGCAAA  5081670
+
+Query  249      ACGATCTTGATCCTACTACCACTTGGTGTTTACATGGTCGTGTTCTCCCTGTTCAAACGG  308
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081669  ACGATCTTGATCCTACTACCACTTGGTGTTTACATGGTCGTGTTCTCCCTGTTCAAACGG  5081610
+
+Query  309      GCGGGCCTCATGCAATTGATACTGATTCCGGTACTGATCTTACACGCCTTCCAGCTCGTT  368
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081609  GCGGGCCTCATGCAATTGATACTGATTCCGGTACTGATCTTACACGCCTTCCAGCTCGTT  5081550
+
+Query  369      TTGTTCTATCTCTTCGGAGAGTCGGTCATCGCTGTTGATATGTTCCTGAAC  419
+                |||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081549  TTGTTCTATCTCTTCGGAGAGTCGGTCATCGCTGTTGATATGTTCCTGAAC  5081499
+
+
+
+
+Range 2: 3244455 to 3244524
+
+Score:123 bits(135), Expect:1e-27, 
+Identities:69/70(99%),  Gaps:0/70(0%), Strand: Plus/Plus
+
+Query  543      AGTTATGTACCTTTGTCGGCAAATAAAGATATTCTCGTCAAACAAATATAAATAATATAA  602
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  3244455  AGTTATGTACCTTTGTCGGCAAATAAAGATATTCTCGTCAAACAAATATAAATAATATAA  3244514
+
+Query  603      ACATGGCAAA  612
+                |||||| |||
+Sbjct  3244515  ACATGGAAAA  3244524
+
+
+
+
+		
+
+
+RID: 0U9SKPDN114	
+Job Title: 17-26G5_6-oSL10787_F07 				
+Program: BLASTN 
+Query: 17-26G5_6-oSL10787_F07 ID: lcl|Query_1441702(dna) Length: 943
+			            
+Subject #1:st23_genome ID: lcl|Query_1441704 Length: 5647539
+Subject #2:pME008 ID: lcl|Query_1441705 Length: 15808
+	                    			
+	
+Sequences producing significant alignments:
+                                                                  Scientific      Common                     Max    Total Query   E    Per.   Acc.                        
+Description                                                       Name            Name            Taxid      Score  Score cover Value  Ident  Len        Accession        
+pME008                                                                                            0          1122   1122  66%   0.0    100.00 15808      Query_1441705    
+st23_genome                                                                                       0          518    518   31%   3e-147 99.32  5647539    Query_1441704    
+
+Alignments:
+
+>pME008
+Sequence ID: Query_1441705 Length: 15808
+Range 1: 10474 to 11095
+
+Score:1122 bits(1244), Expect:0.0, 
+Identities:622/622(100%),  Gaps:0/622(0%), Strand: Plus/Plus
+
+Query  9      ATGGAATAATGGAAAAGGATTAGATTTTAAGCCCACAAAAAGCGTTTCCGAGTTCTTGAC  68
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10474  ATGGAATAATGGAAAAGGATTAGATTTTAAGCCCACAAAAAGCGTTTCCGAGTTCTTGAC  10533
+
+Query  69     AAACAGGTTTTCAAATTGGAGCAATGAATACAAGGAGTTAATTCGTTCAACAACTTTTTT  128
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10534  AAACAGGTTTTCAAATTGGAGCAATGAATACAAGGAGTTAATTCGTTCAACAACTTTTTT  10593
+
+Query  129    CGTTGGTTTAACAATAAAAATATTTCCGCTAGACAAAAAGCCTTGGAAGAGTAATCGTCC  188
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10594  CGTTGGTTTAACAATAAAAATATTTCCGCTAGACAAAAAGCCTTGGAAGAGTAATCGTCC  10653
+
+Query  189    GTTACCCATAACTTTAATTGGCGACACAGCTCACCTAATGCCACCTTTTGCAGGGCAGGG  248
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10654  GTTACCCATAACTTTAATTGGCGACACAGCTCACCTAATGCCACCTTTTGCAGGGCAGGG  10713
+
+Query  249    CGTAAACATTGGACTAATGGACGCTTTGATTTTGTCAGAAAATCTTACAAACGGGAAATT  308
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10714  CGTAAACATTGGACTAATGGACGCTTTGATTTTGTCAGAAAATCTTACAAACGGGAAATT  10773
+
+Query  309    TGGAACGATACAAAGTGCTATTGATGACTATGAACAACGAATGTTTGTTTACGCAACAGA  368
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10774  TGGAACGATACAAAGTGCTATTGATGACTATGAACAACGAATGTTTGTTTACGCAACAGA  10833
+
+Query  369    AGCACAAGCGGACTCGACAAAGAATGAAATAGAAATGCGAAATCCGAGCTTTACTTTTCA  428
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10834  AGCACAAGCGGACTCGACAAAGAATGAAATAGAAATGCGAAATCCGAGCTTTACTTTTCA  10893
+
+Query  429    ACAGCTAATGAATGTATAAtttttttAAGGCAGTTATTGGTGCCCTTCTAGAGTCCTTAC  488
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10894  ACAGCTAATGAATGTATAATTTTTTTAAGGCAGTTATTGGTGCCCTTCTAGAGTCCTTAC  10953
+
+Query  489    TGCAGTAGTTTTGCTGAAATACTCGATTCACAAAAATATCAACTTATGGTTGTTTTGTGA  548
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  10954  TGCAGTAGTTTTGCTGAAATACTCGATTCACAAAAATATCAACTTATGGTTGTTTTGTGA  11013
+
+Query  549    GATATCAATATATGGTTGTTTTGTGGTTAAGTTGCTGATTATAAATAATTATTAAATATC  608
+              ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  11014  GATATCAATATATGGTTGTTTTGTGGTTAAGTTGCTGATTATAAATAATTATTAAATATC  11073
+
+Query  609    ACTTTATGGTTGCATCAACATG  630
+              ||||||||||||||||||||||
+Sbjct  11074  ACTTTATGGTTGCATCAACATG  11095
+
+
+
+
+>st23_genome
+Sequence ID: Query_1441704 Length: 5647539
+Range 1: 5081210 to 5081503
+
+Score:518 bits(574), Expect:3e-147, 
+Identities:292/294(99%),  Gaps:1/294(0%), Strand: Plus/Minus
+
+Query  629      TGAACCTACCCACCACGAACGCCTCCGAGGCCGGGGAATTGCTGGGAAATATATGGCCCT  688
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081503  TGAACCTACCCACCACGAACGCCTCCGAGGCCGGGGAATTGCTGGGAAATATATGGCCCT  5081444
+
+Query  689      CCATTATCATTGTCTGCGTCCTTTATATCCCTGTTATCGTGCTGGCCTCTATTGCCGTAC  748
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081443  CCATTATCATTGTCTGCGTCCTTTATATCCCTGTTATCGTGCTGGCCTCTATTGCCGTAC  5081384
+
+Query  749      ACCATAAAGTGAAACGTACTGCCGTGTTCCGCAAGCACATGATCACGTGGGGAATCATCT  808
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081383  ACCATAAAGTGAAACGTACTGCCGTGTTCCGCAAGCACATGATCACGTGGGGAATCATCT  5081324
+
+Query  809      TCTTTATCATTGGTTCCGGACTGGTCGCTTTCGAGAAACACAGGGATAACACCTACGAGG  868
+                ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+Sbjct  5081323  TCTTTATCATTGGTTCCGGACTGGTCGCTTTCGAGAAACACAGGGATAACACCTACGAGG  5081264
+
+Query  869      TAAAAACAGATATATACCCGGCAAACGTGATGTATAACTTGTA-TACGCGAGAG  921
+                ||||||||||||||||||||||||||||||||||||||||||| |||||| |||
+Sbjct  5081263  TAAAAACAGATATATACCCGGCAAACGTGATGTATAACTTGTATTACGCGGGAG  5081210
+
+
+
+
+		
+
+
+
+

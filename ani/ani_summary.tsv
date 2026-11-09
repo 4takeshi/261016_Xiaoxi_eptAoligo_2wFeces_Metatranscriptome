@@ -1,0 +1,21 @@
+query	ref	fastANI	fastANI_aligned_pct	skani_ANI	skani_aligned_pct	判定
+Odo_St24	Odo_St23	99.998	99.42044257112751	100.0	100.0	同種・近縁
+Odo_St23	Odo_St24	99.9931	98.5363303711448	100.0	99.45	同種・近縁
+Bth_St8	Bth_VPI	98.0667	80.11583011583012	98.12	78.21	同種
+Bth_VPI	Bth_St8	98.0345	79.87601335240821	98.12	77.33	同種
+Bth_VPI	Bun_8492	79.1173	15.832141154029566			別種
+Bun_8492	Bth_VPI	79.0693	21.581335061568375			別種
+Bth_St8	Bun_8492					報告なし（遠縁）
+Bth_St8	Odo_St23					報告なし（遠縁）
+Bth_St8	Odo_St24					報告なし（遠縁）
+Bth_VPI	Odo_St23					報告なし（遠縁）
+Bth_VPI	Odo_St24					報告なし（遠縁）
+Bun_8492	Bth_St8					報告なし（遠縁）
+Bun_8492	Odo_St23					報告なし（遠縁）
+Bun_8492	Odo_St24					報告なし（遠縁）
+Odo_St23	Bth_St8					報告なし（遠縁）
+Odo_St23	Bth_VPI					報告なし（遠縁）
+Odo_St23	Bun_8492					報告なし（遠縁）
+Odo_St24	Bth_St8					報告なし（遠縁）
+Odo_St24	Bth_VPI					報告なし（遠縁）
+Odo_St24	Bun_8492					報告なし（遠縁）

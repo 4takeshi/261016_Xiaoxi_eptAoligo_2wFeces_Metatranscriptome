@@ -1,0 +1,22 @@
+name: metatx
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - fastp
+  - fastqc
+  - multiqc
+  - sortmerna
+  - star
+  - subread
+  - salmon
+  - samtools
+  - bowtie2
+  - skani
+  - seqkit
+  - fastani
+  - minimap2
+  - ca-certificates
+  - certifi
+  - openssl
+prefix: /home/tanoue/miniforge3/envs/metatx
