@@ -95,9 +95,16 @@ python3 build_html.py
 git add -A
 git commit -m "変更内容を短く説明"
 
-# 3. GitHub に送る
+# 3. GitHub に送る   ★ ここは自分で実行する（2026-11-09 決定）
 git push
 ```
+
+★ **`git push` は自分で実行する。**Claude Code の auto モードでは、分類器が
+`git push` を「外部へのデータ送信」として止める（`Reason: [Data Exfiltration]`）。
+`.claude/settings.json` に `"permissions": {"allow": ["Bash(git push:*)"]}` を足せば
+通せるが、**Claude Code が外部へデータを送れるようになるため、あえて設定しない。**
+Claude Code には `git commit` までをやらせ、`git push` は VS Code の
+「ソース管理」パネルかターミナルから自分で行う。
 
 - コミット前に `git status` で、意図しないファイルが入っていないか確認する。
 - HTML を見るときは、VS Code のコマンドパレット →「Simple Browser: Show」→

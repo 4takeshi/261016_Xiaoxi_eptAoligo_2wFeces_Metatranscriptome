@@ -57,6 +57,8 @@ cd /home/tanoue/261016_Xiaoxi_eptAoligo_2wFeces_Metatranscriptome
 python3 build_html.py
 ```
 
+★ **`git push` は自分で実行する**（`SETUP.md` 参照）。Claude Code には `git commit` までを任せる。
+
 **縮小版と原寸版を必ず両方作る**（片方だけ古くなる事故を防ぐため）。原寸版は
 `oligo_eptA_analysis_full.html` で、GitHub の 1ファイル 100 MB 上限を超えるので
 `.gitignore` に入れてありローカルのみ。
