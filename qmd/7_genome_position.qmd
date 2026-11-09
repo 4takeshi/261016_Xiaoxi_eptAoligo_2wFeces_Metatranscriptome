@@ -2255,7 +2255,7 @@ print(figs_ann[['B']])
 ```{r}
 #| vscode: {languageId: r}
 # ══════════════════════════════════════════════════════════════════
-# セル3-4: 塊を作らない pathway を遺伝子単位で重ねる（図1-3、17項目）
+# セル3-4: 塊を作らない pathway を遺伝子単位で重ねる（図1-3、19項目）
 # ══════════════════════════════════════════════════════════════════
 # セル3-3 は「2遺伝子以上が 10 kb 以内に隣り合う塊」だけを枠で描いた。
 # そこから漏れる所見のほうが多いので、1項目1図で遺伝子そのものに印を打つ。
@@ -2292,7 +2292,16 @@ print(figs_ann[['B']])
 #   '3-oxoacyl-\\[acyl-carrier-protein\\]' と書いたらエスケープが深くなり
 #   'Invalid character range' で落ちた（実測）。括弧の手前までで足りる
 #
-# ★ 34 枚を notebook に表示はしない。ファイルに書くだけにして、最後に一覧表を出す
+# ★ 38 枚すべてを notebook にも表示する（2026-11-09 変更）
+#   以前はファイルに書くだけだったので、notebook や HTML を見るだけの人には
+#   図が1枚も見えなかった。項目ごとの要約行のすぐ後に scheme A → B の順で出す
+#   ディスクの PNG（200 dpi, 2800x2100）と PDF は従来どおりで、表示を足すだけ
+#   セル3-5 が FMT='pdf' で呼び直すときは表示しない（PDF を書くだけにする）
+# ★ 表示に print(P) を使わない
+#   print(P) だと図の出る位置が1枚分後ろにずれる（実測）。IRkernel は描画デバイスの
+#   ページを「次の図が始まったとき」に初めて画像として送るので、cat の要約行と
+#   交互に出すと図が1つ遅れ、最後の1枚は末尾の一覧表より後ろに出てしまった。
+#   表示用の PNG を一度書き出して display_png で出せば、順序は要約行と一致する
 #
 # ★ 図の中は ASCII のみ（CLAUDE.md）
 
@@ -2317,6 +2326,10 @@ HL='#B8860B'; HLD='#6b4f00'; MUT='#aab4bf'; MUTD='#78838f'; GAP=10000
 #   文字が重なって読めなくなる（実測）。|LFC| の大きい順にこの数だけ付ける。
 #   丸は全部残るのでデータは隠れない
 LABMAX = 12
+# ★ notebook 表示用の解像度。14x10.5 inch x 120 dpi = 1680x1260 px で、
+#   セル3 / セル3-3 が print() で出している図と同じ大きさになる。
+#   ディスクに残す 200 dpi（2800x2100）の PNG とは別物で、表示後に消す
+DPI_NB = 120
 
 # tag / 英語名 / 名前の規則 / product の規則 / 除外 / 最小塊サイズ / PFAM の規則
 # ★ PFAM を足したのは OmpA のため。product の 'OmpA family' だと 10 遺伝子しか
@@ -2438,6 +2451,13 @@ mkone = function(TAG, THEN, NMR, PRR, EXR, KMIN, PFR = NA, FMT = 'png') {
           うち低下=nd, 完全単独=n_alone, 枠か帯に入る=nrow(sg)-n_alone,
           アノテ無しの株=ifelse(length(none)==0,'—',paste(none, collapse=',')),
           stringsAsFactors=FALSE)
+    }
+    # ★ notebook にも出す。PDF 用に呼ばれたとき（セル3-5）は出さない
+    if (FMT == 'png') {
+      tmp = tempfile(fileext = '.png')
+      suppressWarnings(ggsave(tmp, P, width = 14, height = 10.5, dpi = DPI_NB, bg = 'white'))
+      IRdisplay::display_png(file = tmp)
+      unlink(tmp)
     }
   }
 }

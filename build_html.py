@@ -28,7 +28,11 @@ OUT_SMALL = project_dir / "oligo_eptA_analysis.html"
 OUT_FULL  = project_dir / "oligo_eptA_analysis_full.html"
 
 MAXW    = 1600   # 縮小版での画像の横幅の上限（px）
-JPEG_Q  = 88     # 縮小版の JPEG 品質
+JPEG_Q  = 70     # 縮小版の JPEG 品質
+#   2026-11-09: 88 -> 70 に下げた。セル3-4 が図1-3 の 38 枚を notebook に
+#   出すようになり、88 のままだと縮小版が約 97 MB（GitHub 上限 100 MB の直前）
+#   になるため。横幅 1600 px は維持したので、ブラウザで拡大したときの
+#   遺伝子ラベルの読みやすさは変わらない。原寸版（_full）は無圧縮のまま
 
 # (元ファイル, 章タイトル)
 parts = [
