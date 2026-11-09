@@ -19,7 +19,9 @@ for nb in $(git diff --cached --name-only --diff-filter=ACM | grep '\.ipynb$' | 
 done
 
 # (2) ★ .gitignore に入れている notebook も、写しだけは追いかける。
-#     6_pathway.ipynb は 95 MB あるので本体は管理しないが、コード+markdown は残す。
+#     6_pathway.ipynb は 95 MB あるので本体は管理しない。代わりに2つの写しを置く。
+#       qmd/6_pathway.qmd        コード+markdown（差分を読むため）
+#       6_pathway_nofig.ipynb    図だけ落とした notebook（2.1 MB。数値と表は読める）
 #     ステージされないのでここで明示的に拾う（本体より新しければ作り直す）
 for nb in 6_pathway.ipynb; do
   [ -f "$nb" ] || continue
@@ -29,4 +31,11 @@ for nb in 6_pathway.ipynb; do
     jupytext --to qmd --output "$qmd" "$nb" || exit 1
   fi
   git add "$qmd"
+
+  nofig="$(basename "$nb" .ipynb)_nofig.ipynb"
+  if [ ! -f "$nofig" ] || [ "$nb" -nt "$nofig" ]; then
+    echo "[pre-commit] (ignored) $nb -> $nofig"
+    python3 strip_figures.py "$nb" "$nofig" || exit 1
+  fi
+  git add "$nofig"
 done

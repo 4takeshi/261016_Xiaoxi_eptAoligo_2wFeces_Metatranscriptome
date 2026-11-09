@@ -2,8 +2,10 @@
 # scratch 側（/mnt/scratch/tanoue/261016_.../）には全部そろっている（CLAUDE.md §6-10）。
 
 # ── 95 MB。画像 227 枚で埋まっており、更新のたびにリポジトリへ 95 MB 積まれる。
-#    コード+markdown の写しは pre-commit フックが qmd/6_pathway.qmd に作る。
-#    出力（図・表）は HTML と scratch/pathway/ に残る
+#    代わりに2つの写しを管理する（どちらも pre-commit フックが作る）。
+#      qmd/6_pathway.qmd       コード+markdown
+#      6_pathway_nofig.ipynb   図だけ落とした notebook（2.1 MB。文字出力・表は残る）
+#    図そのものは HTML と scratch/pathway/ に残る
 /6_pathway.ipynb
 
 # ── HTML の原寸版（115〜120 MB）。GitHub の上限を超える。縮小版だけ管理する

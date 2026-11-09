@@ -29,12 +29,18 @@
 - ★ **`build_html.py` は毎回2本とも作る。**片方だけ古くなる事故を防ぐため。
 
 **Q3. 95 MB の `6_pathway.ipynb` を git でどう扱うか？**
-→ **本体は `.gitignore`。出力を落とした写し（`qmd/6_pathway.qmd`）だけコミットする。**
+→ **本体は `.gitignore`。写しを2つコミットする。**
+
+| 写し | 中身 | サイズ |
+|---|---|---|
+| `qmd/6_pathway.qmd` | コード+markdown。GitHub で差分を読むため | 約 0.2 MB |
+| `6_pathway_nofig.ipynb` | **図だけ落とした notebook。**文字出力・表・エラーは残るので数値は読める | **2.1 MB** |
 
 - 本体をコミットすると、更新のたびに約 95 MB がリポジトリに積まれる。
-- 出力（図・表）は **HTML と `/mnt/scratch/.../pathway/`** に残るので失われない。
+  画像 227 枚（base64 で 97 MB 相当）がその大半。
+- 図そのものは **HTML と `/mnt/scratch/.../pathway/`** に残るので失われない。
 - `.gitignore` に入れた notebook はステージされないため、pre-commit フックが
-  **明示的に拾って** qmd を作り直す（下記）。
+  **明示的に拾って**両方を作り直す。図を落とす処理は `strip_figures.py`。
 
 **Q4. GitHub を使うか／公開範囲は？**
 → **使う。Private。** 臨床データは含まないが未発表のため。アカウントは `4takeshi`。
@@ -50,7 +56,7 @@
 
 | 管理する | 外す（`.gitignore`） |
 |---|---|
-| notebook 7本（`6_pathway.ipynb` 以外）、`qmd/` の写し8本 | `6_pathway.ipynb`（95 MB） |
+| notebook 7本、`qmd/` の写し8本、`6_pathway_nofig.ipynb`（図なし 2.1 MB） | `6_pathway.ipynb`（95 MB） |
 | `oligo_eptA_analysis.html`（縮小版） | `oligo_eptA_analysis_full.html`（原寸版） |
 | `CLAUDE.md`、`README.md`、`SETUP.md`、`build_html.py`、`styles.css` | `_build/`、`.quarto/` |
 | 成果物の CSV / PNG / HTML（project 直下）、`pdf/` | `annmap/`（33 MB）、`annmap_pdf/`（22 MB） |
@@ -127,3 +133,5 @@ SSH 鍵は `261013_Blastp_acdA` で設定済みのものがそのまま使える
   表示し続けることがある。コマンドパレット →「File: Revert File」で読み込み直す。
 - **`6_pathway.ipynb` は git に入っていない。**消すと復元できないので、
   scratch 側（`/mnt/scratch/.../`）にも控えを置いておくこと。
+  `6_pathway_nofig.ipynb` は**図が落ちている**ので、これだけでは元に戻せない。
+- **`6_pathway_nofig.ipynb` を編集しない。**元の notebook から作り直される。

@@ -19,7 +19,7 @@
 | ステージ3-4 | `4_reads.ipynb` | fastp・bowtie2・featureCounts・QC → **ゲート2** |
 | ステージ5 | `5_1_DESeq2_A_community.ipynb` | **(A) 全株プール** = 宿主が何にさらされているか |
 | ステージ5 | `5_2_DESeq2_B_perstrain.ipynb` | **(B) 株ごと独立** = 各菌が自分の中で何を上げ下げしたか |
-| ステージ6 | `6_pathway.ipynb` | ORA / GSEA / pathview（5ソース × 2スキーム） |
+| ステージ6 | `6_pathway.ipynb` | ORA / GSEA / pathview（5ソース × 2スキーム）。**95 MB のため git では `6_pathway_nofig.ipynb`（図なし 2.1 MB）を管理** |
 | ステージ7 | `7_genome_position.ipynb` | ゲノム座位からの解析・ゲノムブラウザ |
 
 ★ **(A) と (B) に主従は付けない。**問いが違うので両方を対等に出す。
