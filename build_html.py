@@ -43,6 +43,7 @@ parts = [
     ("5_1_DESeq2_A_community.ipynb",   "ステージ5 (A): 全株プール DESeq2"),
     ("5_2_DESeq2_B_perstrain.ipynb",   "ステージ5 (B): 株ごと独立 DESeq2"),
     ("6_pathway.ipynb",                "ステージ6: 機能解析"),
+    ("6_2_pathway_appendix.ipynb",     "ステージ6 付録: 図を描いていなかった経路を足す"),
     ("7_genome_position.ipynb",        "ステージ7: ゲノム座位からの解析"),
 ]
 
